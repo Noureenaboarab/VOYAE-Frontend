@@ -1,0 +1,369 @@
+<main class="checkout page-wrapper">
+  <div class="container">
+    <div class="two-col-layout">
+
+      <!-- ======= LEFT: FORM ======= -->
+      <div class="checkout__form-col">
+
+        <!-- Breadcrumb steps -->
+        <nav class="checkout-steps" aria-label="Checkout progress">
+          @for (step of steps; track step.num) {
+            <div class="checkout-step is-active">
+              <span class="checkout-step__num">{{ step.num }}</span>
+              <span class="checkout-step__label">{{ step.label }}</span>
+            </div>
+            @if (!$last) {
+              <span class="checkout-step__sep" aria-hidden="true">›</span>
+            }
+          }
+        </nav>
+
+        <form [formGroup]="form" (ngSubmit)="placeOrder()" novalidate>
+
+          <!-- ---- CONTACT ---- -->
+          <section class="checkout-section">
+            <h2 class="checkout-section__title">Contact</h2>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="firstName">First name</label>
+                <input
+                  id="firstName"
+                  type="text"
+                  class="form-control"
+                  [class.is-error]="isFieldInvalid('firstName')"
+                  formControlName="firstName"
+                  autocomplete="given-name" />
+                @if (isFieldInvalid('firstName')) {
+                  <span class="form-error">First name is required</span>
+                }
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="lastName">Last name</label>
+                <input
+                  id="lastName"
+                  type="text"
+                  class="form-control"
+                  [class.is-error]="isFieldInvalid('lastName')"
+                  formControlName="lastName"
+                  autocomplete="family-name" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="email">Email address</label>
+              <input
+                id="email"
+                type="email"
+                class="form-control"
+                [class.is-error]="isFieldInvalid('email')"
+                formControlName="email"
+                autocomplete="email" />
+              @if (isFieldInvalid('email')) {
+                <span class="form-error">A valid email is required</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="phone">Phone number</label>
+              <input
+                id="phone"
+                type="tel"
+                class="form-control"
+                formControlName="phone"
+                autocomplete="tel" />
+            </div>
+          </section>
+
+          <!-- ---- SHIPPING ADDRESS ---- -->
+          <section class="checkout-section">
+            <h2 class="checkout-section__title">Shipping address</h2>
+
+            <div class="form-group">
+              <label class="form-label" for="address">Address</label>
+              <input
+                id="address"
+                type="text"
+                class="form-control"
+                [class.is-error]="isFieldInvalid('address')"
+                formControlName="address"
+                autocomplete="street-address" />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="city">City</label>
+                <input
+                  id="city"
+                  type="text"
+                  class="form-control"
+                  formControlName="city"
+                  autocomplete="address-level2" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="zip">ZIP code</label>
+                <input
+                  id="zip"
+                  type="text"
+                  class="form-control"
+                  formControlName="zip"
+                  autocomplete="postal-code" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="state">State</label>
+                <select
+                  id="state"
+                  class="form-select"
+                  formControlName="state"
+                  autocomplete="address-level1">
+                  <option value="New York">New York</option>
+                  <option value="California">California</option>
+                  <option value="Texas">Texas</option>
+                  <option value="Florida">Florida</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="country">Country</label>
+                <select
+                  id="country"
+                  class="form-select"
+                  formControlName="country"
+                  autocomplete="country-name">
+                  <option value="United States">United States</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Australia">Australia</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Shipping method -->
+            <div class="form-group" style="margin-top: var(--space-4)">
+              <p class="form-label" style="margin-bottom: var(--space-3)">Shipping method</p>
+              <div class="stack-3">
+                @for (opt of shippingOptions; track opt.id) {
+                  <label
+                    class="radio-card"
+                    [class.is-selected]="selectedShipping() === opt.id"
+                    (click)="selectShipping(opt.id)">
+                    <input
+                      type="radio"
+                      name="shippingMethod"
+                      [value]="opt.id"
+                      [checked]="selectedShipping() === opt.id"
+                      (change)="selectShipping(opt.id)" />
+                    <div class="radio-card__content">
+                      <span class="radio-card__label">{{ opt.label }}</span>
+                      <span class="radio-card__sub">{{ opt.description }}</span>
+                    </div>
+                    <span class="radio-card__price">{{ formatShippingPrice(opt.price) }}</span>
+                  </label>
+                }
+              </div>
+            </div>
+          </section>
+
+          <!-- ---- PAYMENT ---- -->
+          <section class="checkout-section">
+            <h2 class="checkout-section__title">Payment</h2>
+
+            <div class="form-group">
+              <label class="form-label" for="cardNumber">Card number</label>
+              <div class="card-input-wrap">
+                <input
+                  id="cardNumber"
+                  type="text"
+                  class="form-control"
+                  formControlName="cardNumber"
+                  placeholder="1234 1234 1234 1234"
+                  autocomplete="cc-number"
+                  inputmode="numeric"
+                  maxlength="19" />
+                <span class="card-input-wrap__icon" aria-hidden="true">
+                  <svg width="24" height="16" viewBox="0 0 24 16" fill="none">
+                    <rect width="24" height="16" rx="2" fill="#E8E3DC"/>
+                    <rect x="0" y="5" width="24" height="4" fill="#D6CDBF"/>
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="expiry">Expiry date</label>
+                <input
+                  id="expiry"
+                  type="text"
+                  class="form-control"
+                  formControlName="expiry"
+                  placeholder="MM / YY"
+                  autocomplete="cc-exp"
+                  maxlength="7" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cvv">CVV</label>
+                <input
+                  id="cvv"
+                  type="password"
+                  class="form-control"
+                  formControlName="cvv"
+                  placeholder="•••"
+                  autocomplete="cc-csc"
+                  maxlength="4" />
+              </div>
+            </div>
+          </section>
+
+          <!-- ---- PLACE ORDER ---- -->
+          <button
+            type="submit"
+            class="btn btn--primary btn--full checkout__submit"
+            [class.btn--loading]="placingOrder()"
+            [disabled]="placingOrder()">
+            @if (!placingOrder()) {
+              Place Order — {{ formatPrice(total()) }}
+            }
+          </button>
+
+          <p class="checkout__ssl">
+            <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
+              <rect x="1" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M3.5 6V4.5a2.5 2.5 0 015 0V6" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Secured with 256-bit SSL encryption
+          </p>
+
+        </form>
+      </div>
+
+      <!-- ======= RIGHT: ORDER SUMMARY ======= -->
+      <aside class="order-summary" aria-label="Order summary">
+        <h2 class="order-summary__title">Order Summary</h2>
+
+        <!-- Items -->
+        <div class="order-summary__items">
+          @for (item of cartItems(); track item.product.id) {
+            <div class="order-item">
+              <img
+                [src]="item.product.images[0]"
+                [alt]="item.product.name"
+                class="order-item__image" />
+              <div class="order-item__info">
+                <p class="order-item__type">{{ item.product.type }}</p>
+                <p class="order-item__name">{{ item.product.name }}</p>
+                @if (item.quantity > 1) {
+                  <p class="body-sm text-muted">Qty: {{ item.quantity }}</p>
+                }
+              </div>
+              <span class="order-item__price">
+                {{ formatPrice(item.product.price * item.quantity) }}
+              </span>
+            </div>
+          }
+
+          <!-- Fallback when cart is empty (preview mode) -->
+          @if (cartItems().length === 0) {
+            <div class="order-item">
+              <div class="order-item__image order-item__image--placeholder"></div>
+              <div class="order-item__info">
+                <p class="order-item__type">THE CARRY-ON</p>
+                <p class="order-item__name">Desert Sand</p>
+              </div>
+              <span class="order-item__price">$295</span>
+            </div>
+            <div class="order-item">
+              <div class="order-item__image order-item__image--placeholder order-item__image--dark"></div>
+              <div class="order-item__info">
+                <p class="order-item__type">THE CHECK-IN</p>
+                <p class="order-item__name">Obsidian Black</p>
+              </div>
+              <span class="order-item__price">$395</span>
+            </div>
+          }
+        </div>
+
+        <!-- Coupon -->
+        <div class="coupon-field">
+          <svg class="coupon-field__icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M1 8L8 1l7 7-7 7-7-7z" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+          <input
+            type="text"
+            class="coupon-field__input"
+            placeholder="Discount code"
+            [value]="couponInput()"
+            (input)="couponInput.set($any($event.target).value)"
+            [disabled]="couponApplied()" />
+          @if (couponApplied()) {
+            <span class="coupon-field__status">
+              Applied
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </span>
+          } @else {
+            <button
+              type="button"
+              class="btn btn--ghost btn--sm"
+              (click)="applyCoupon()">
+              Apply
+            </button>
+          }
+        </div>
+        @if (couponError()) {
+          <p class="form-error" style="margin-top: calc(-1 * var(--space-2))">{{ couponError() }}</p>
+        }
+
+        <!-- Price breakdown -->
+        <div class="order-summary__totals">
+          <div class="price-line">
+            <span>Subtotal</span>
+            <span>{{ formatPrice(subtotal()) || '$690' }}</span>
+          </div>
+          @if (couponApplied()) {
+            <div class="price-line price-line--discount">
+              <span>Discount ({{ couponCode() }})</span>
+              <span>−{{ formatPrice(cart.cart().discount ?? 0) }}</span>
+            </div>
+          }
+          <div class="price-line">
+            <span>Shipping</span>
+            <span>{{ formatShippingPrice(shipping()) }}</span>
+          </div>
+          <div class="price-line price-line--total">
+            <span>Total</span>
+            <span>{{ formatPrice(total()) || '$552' }}</span>
+          </div>
+        </div>
+
+        <!-- Trust badges -->
+        <div class="order-summary__trust">
+          <div class="trust-badge">
+            <svg class="trust-badge__icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M5.5 8l2 2 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            30-day free returns
+          </div>
+          <div class="trust-badge">
+            <svg class="trust-badge__icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 1.5L2 4v4.5c0 3.5 2.667 5.5 6 6 3.333-.5 6-2.5 6-6V4L8 1.5z" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            2-year warranty included
+          </div>
+          <div class="trust-badge">
+            <svg class="trust-badge__icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M8 4v4l2.5 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            Carbon-neutral shipping
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</main>

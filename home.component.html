@@ -1,0 +1,115 @@
+<main class="home page-wrapper">
+
+  <!-- ======= HERO ======= -->
+  <section class="hero">
+    <div class="hero__content">
+      <p class="eyebrow hero__eyebrow">Luggage, engineered</p>
+      <h1 class="hero__headline display-lg">
+        The long way<br>
+        <span class="accent">around</span> starts<br>
+        here.
+      </h1>
+      <p class="body-base hero__desc">
+        Precision-built suitcases for people who move
+        through the world with intent. One shell. Ten years.
+        A lifetime of trips.
+      </p>
+      <div class="hero__actions">
+        <a routerLink="/shop" class="btn btn--primary">Shop the collection</a>
+        <a routerLink="/about" class="btn btn--ghost">How it's made</a>
+      </div>
+    </div>
+    <div class="hero__image-wrap">
+      <img
+        src="/assets/images/hero-carry-on-desert-sand.jpg"
+        alt="VOYÆ Carry-On in Desert Sand"
+        class="hero__image"
+        priority />
+      <div class="hero__image-label">
+        <span class="eyebrow">The Carry-On</span>
+        <span class="display-sm">Desert Sand</span>
+        <span class="price accent">$295</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= STAT BAR ======= -->
+  <div class="stat-bar container">
+    @for (stat of stats; track stat.value) {
+      <div class="stat-bar__item">
+        <div class="stat-number">{{ stat.value }}</div>
+        <div class="stat-label">{{ stat.label }}</div>
+      </div>
+    }
+  </div>
+
+  <!-- ======= FEATURE STRIP ======= -->
+  <div class="feature-strip">
+    @for (feat of features; track feat) {
+      <span class="feature-strip__item">{{ feat }}</span>
+    }
+  </div>
+
+  <!-- ======= COLLECTION PREVIEW ======= -->
+  <section class="section container">
+    <div class="section-header flex-between">
+      <h2 class="display-md">The Collection</h2>
+      <a routerLink="/shop" class="section-header__link">View all</a>
+    </div>
+
+    <div class="grid grid--3">
+      @for (product of featuredProducts().slice(0, 3); track product.id) {
+        <voy-product-card [product]="product" />
+      }
+    </div>
+  </section>
+
+  <!-- ======= BUILD QUALITY SECTION ======= -->
+  <section class="build-quality">
+    <div class="build-quality__image-wrap">
+      <img
+        src="/assets/images/build-quality-detail.jpg"
+        alt="VOYÆ luggage hardware detail"
+        class="build-quality__image" />
+    </div>
+    <div class="build-quality__content">
+      <p class="eyebrow">Built different</p>
+      <h2 class="display-md">Every component chosen for a reason.</h2>
+      <div class="stack-6" style="margin-top: var(--space-8)">
+        <div class="build-feature">
+          <h3 class="build-feature__title">— Polycarbonate Shell</h3>
+          <p class="body-sm text-muted">Five-layer polycarbonate cube shell engineered to absorb impact and spring back to form. Every single time.</p>
+        </div>
+        <div class="build-feature">
+          <h3 class="build-feature__title">— Aircraft Aluminum</h3>
+          <p class="body-sm text-muted">Where aluminium gives the frame a lighter feel, steel and stronger than anything else on the shell.</p>
+        </div>
+        <div class="build-feature">
+          <h3 class="build-feature__title">— Silent Wheels</h3>
+          <p class="body-sm text-muted">Precision-engineered 360° spinner wheels roll over cobblestones, carpet and cracked pavement without a sound.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= TESTIMONIALS ======= -->
+  <section class="section container">
+    <p class="eyebrow" style="text-align:center; margin-bottom: var(--space-8)">What travellers say</p>
+    <div class="grid grid--3">
+      @for (t of testimonials; track t.author) {
+        <div class="testimonial-card">
+          <p class="testimonial-card__quote">"{{ t.quote }}"</p>
+          <div class="testimonial-card__author">
+            <div>
+              <p class="testimonial-card__name">{{ t.author }}</p>
+              @if (t.subtitle) {
+                <p class="testimonial-card__sub">{{ t.subtitle }}</p>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+</main>

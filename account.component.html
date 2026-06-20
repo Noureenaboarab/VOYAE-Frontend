@@ -1,0 +1,228 @@
+<main class="account page-wrapper">
+  <div class="container">
+    <div class="account-layout">
+
+      <!-- ======= SIDEBAR ======= -->
+      <aside class="account__sidebar">
+
+        <!-- Avatar + name -->
+        <div class="account__profile-head">
+          <div class="account__avatar-wrap">
+            <img
+              [src]="profile.avatarUrl"
+              [alt]="profile.firstName + ' ' + profile.lastName"
+              class="account__avatar"
+              onerror="this.src=''" />
+            <span class="account__avatar-initials" [class.is-visible]="!profile.avatarUrl">
+              {{ profile.firstName[0] }}{{ profile.lastName[0] }}
+            </span>
+          </div>
+          <div>
+            <p class="account__profile-name">{{ profile.firstName }} {{ profile.lastName }}</p>
+            <p class="account__profile-since">Member since {{ profile.memberSince }}</p>
+          </div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="account-nav" aria-label="Account navigation">
+          @for (item of navItems; track item.id) {
+            <button
+              class="account-nav__item"
+              [class.is-active]="activeSection() === item.id"
+              (click)="setSection(item.id)">
+              <!-- Icon -->
+              <span class="account-nav__icon" aria-hidden="true">
+                @switch (item.icon) {
+                  @case ('user') {
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/>
+                      <path d="M2 14c0-3 2.686-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                    </svg>
+                  }
+                  @case ('box') {
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <rect x="1.5" y="5" width="13" height="9.5" rx="1" stroke="currentColor" stroke-width="1.3"/>
+                      <path d="M1.5 5l2-3.5h9l2 3.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                      <path d="M6 5v3h4V5" stroke="currentColor" stroke-width="1.3"/>
+                    </svg>
+                  }
+                  @case ('heart') {
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M8 13.5S1.5 9.5 1.5 5A3.5 3.5 0 018 3.176 3.5 3.5 0 0114.5 5C14.5 9.5 8 13.5 8 13.5z" stroke="currentColor" stroke-width="1.3"/>
+                    </svg>
+                  }
+                  @case ('map-pin') {
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M8 1.5a4.5 4.5 0 014.5 4.5c0 3.5-4.5 8.5-4.5 8.5S3.5 9.5 3.5 6A4.5 4.5 0 018 1.5z" stroke="currentColor" stroke-width="1.3"/>
+                      <circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.3"/>
+                    </svg>
+                  }
+                  @case ('credit-card') {
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <rect x="1" y="3.5" width="14" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+                      <path d="M1 7h14" stroke="currentColor" stroke-width="1.3"/>
+                      <path d="M4 10.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                    </svg>
+                  }
+                  @case ('settings') {
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+                      <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                    </svg>
+                  }
+                }
+              </span>
+              {{ item.label }}
+            </button>
+          }
+        </nav>
+
+        <!-- Sign out -->
+        <button class="account__signout">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M5.5 2H2a1 1 0 00-1 1v8a1 1 0 001 1h3.5M9.5 10l3-3-3-3M12.5 7H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Sign out
+        </button>
+      </aside>
+
+      <!-- ======= CONTENT ======= -->
+      <section class="account__content">
+
+        @switch (activeSection()) {
+
+          <!-- PERSONAL INFO -->
+          @case ('personal') {
+            <div class="account-content-block">
+              <div class="account-content-block__header">
+                <h1 class="account-content-block__title">Personal Info</h1>
+                <button
+                  class="btn btn--ghost btn--sm"
+                  (click)="editingProfile.set(!editingProfile())">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M8.5 1.5l2 2-7 7H1.5v-2l7-7z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                  </svg>
+                  {{ editingProfile() ? 'Cancel' : 'Edit' }}
+                </button>
+              </div>
+
+              <div class="profile-fields">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-control" [value]="profile.firstName" [readonly]="!editingProfile()" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-control" [value]="profile.lastName" [readonly]="!editingProfile()" />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" [value]="profile.email" [readonly]="!editingProfile()" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" [value]="profile.phone" [readonly]="!editingProfile()" />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Date of Birth</label>
+                    <input type="text" class="form-control" [value]="profile.dateOfBirth" [readonly]="!editingProfile()" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Country</label>
+                    <input type="text" class="form-control" [value]="profile.country" [readonly]="!editingProfile()" />
+                  </div>
+                </div>
+                @if (editingProfile()) {
+                  <button class="btn btn--primary" style="margin-top: var(--space-4)">Save changes</button>
+                }
+              </div>
+
+              <!-- Password -->
+              <div class="account-content-block" style="margin-top: var(--space-10)">
+                <div class="account-content-block__header">
+                  <h2 class="account-content-block__title">Password</h2>
+                  <button class="btn btn--ghost btn--sm">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M8.5 1.5l2 2-7 7H1.5v-2l7-7z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                    </svg>
+                    Change
+                  </button>
+                </div>
+                <div class="form-group">
+                  <input type="password" class="form-control" value="••••••••••••" readonly />
+                </div>
+              </div>
+
+              <!-- Recent orders -->
+              <div class="account-content-block" style="margin-top: var(--space-10)">
+                <div class="account-content-block__header">
+                  <h2 class="account-content-block__title">Recent Orders</h2>
+                  <button class="btn btn--ghost btn--sm">View all</button>
+                </div>
+                <div class="orders-list">
+                  @for (order of recentOrders; track order.id) {
+                    <div class="order-row">
+                      <div class="order-row__meta">
+                        <span class="order-row__id">{{ order.id }}</span>
+                        <span class="order-row__date text-muted">{{ order.date }}</span>
+                        <span class="order-row__desc text-muted">{{ getOrderDescription(order) }}</span>
+                      </div>
+                      <div class="order-row__actions">
+                        <span class="order-row__status order-row__status--{{ order.status }}">
+                          {{ getStatusLabel(order.status) }}
+                        </span>
+                        <button class="btn btn--ghost btn--sm">View →</button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- ORDERS (placeholder) -->
+          @case ('orders') {
+            <div class="account-content-block">
+              <h1 class="account-content-block__title">Orders</h1>
+              <div class="orders-list" style="margin-top: var(--space-6)">
+                @for (order of recentOrders; track order.id) {
+                  <div class="order-row">
+                    <div class="order-row__meta">
+                      <span class="order-row__id">{{ order.id }}</span>
+                      <span class="order-row__date text-muted">{{ order.date }}</span>
+                      <span class="order-row__desc text-muted">{{ getOrderDescription(order) }}</span>
+                    </div>
+                    <div class="order-row__actions">
+                      <span class="order-row__status order-row__status--{{ order.status }}">
+                        {{ getStatusLabel(order.status) }}
+                      </span>
+                      <button class="btn btn--ghost btn--sm">View →</button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- OTHER SECTIONS (placeholder) -->
+          @default {
+            <div class="account-content-block">
+              <h1 class="account-content-block__title">
+                {{ navItems.find(n => n.id === activeSection())?.label }}
+              </h1>
+              <p class="body-base text-muted" style="margin-top: var(--space-4)">
+                This section is ready to be built out.
+              </p>
+            </div>
+          }
+        }
+
+      </section>
+    </div>
+  </div>
+</main>

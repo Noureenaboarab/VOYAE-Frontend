@@ -1,0 +1,127 @@
+// ============================================================
+// VOYÆ Design Tokens
+// Single source of truth for all visual decisions
+// ============================================================
+
+// --- Color Palette ---
+:root {
+  // Neutrals
+  --color-parchment:        #F2EDE6;   // page background
+  --color-parchment-dark:   #EAE3D8;   // subtle section bg
+  --color-sand:             #D6CDBF;   // borders, dividers
+  --color-stone:            #9C9287;   // muted text, placeholders
+  --color-charcoal:         #2C2B28;   // body text
+  --color-ink:              #1A1916;   // headings, strong elements
+  --color-white:            #FFFFFF;
+
+  // Brand accents
+  --color-terra:            #B85C38;   // desert sand / terracotta accent
+  --color-terra-light:      #D4795A;   // hover state
+  --color-terra-muted:      #C4724E;   // secondary accent uses
+
+  // Feedback
+  --color-success:          #4A7C59;
+  --color-error:            #C0392B;
+  --color-warning:          #C07A2B;
+
+  // Announcement bar
+  --color-bar-bg:           #1A1916;
+  --color-bar-text:         #FFFFFF;
+
+  // --- Typography ---
+  --font-display:    'Cormorant Garamond', 'Georgia', serif;   // large headings
+  --font-body:       'Jost', 'Inter', sans-serif;              // UI, body copy
+  --font-mono:       'DM Mono', 'Courier New', monospace;      // data, codes
+
+  // Type scale (fluid)
+  --text-xs:    0.6875rem;   // 11px  — labels, legal
+  --text-sm:    0.8125rem;   // 13px  — captions, meta
+  --text-base:  0.9375rem;   // 15px  — body
+  --text-md:    1.0625rem;   // 17px  — UI emphasis
+  --text-lg:    1.25rem;     // 20px  — subheadings
+  --text-xl:    1.5rem;      // 24px  — section headings
+  --text-2xl:   2rem;        // 32px  — page headings
+  --text-3xl:   2.75rem;     // 44px  — hero display
+  --text-4xl:   4rem;        // 64px  — large hero
+
+  // Font weights
+  --weight-light:   300;
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold:600;
+  --weight-bold:    700;
+
+  // Line heights
+  --leading-tight:  1.15;
+  --leading-snug:   1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed:1.65;
+
+  // Letter spacing
+  --tracking-tight:  -0.02em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.05em;
+  --tracking-wider:   0.1em;
+  --tracking-widest:  0.15em;
+
+  // --- Spacing (8pt grid) ---
+  --space-1:   0.25rem;   //  4px
+  --space-2:   0.5rem;    //  8px
+  --space-3:   0.75rem;   // 12px
+  --space-4:   1rem;      // 16px
+  --space-5:   1.25rem;   // 20px
+  --space-6:   1.5rem;    // 24px
+  --space-8:   2rem;      // 32px
+  --space-10:  2.5rem;    // 40px
+  --space-12:  3rem;      // 48px
+  --space-16:  4rem;      // 64px
+  --space-20:  5rem;      // 80px
+  --space-24:  6rem;      // 96px
+  --space-32:  8rem;      // 128px
+
+  // --- Border radius ---
+  --radius-none:  0;
+  --radius-sm:    2px;
+  --radius-md:    4px;
+  --radius-lg:    8px;
+  --radius-full:  9999px;
+
+  // --- Border ---
+  --border-thin:    1px solid var(--color-sand);
+  --border-medium:  1.5px solid var(--color-sand);
+  --border-dark:    1px solid var(--color-charcoal);
+  --border-ink:     1.5px solid var(--color-ink);
+
+  // --- Shadows ---
+  --shadow-sm:  0 1px 3px rgba(26, 25, 22, 0.08);
+  --shadow-md:  0 4px 12px rgba(26, 25, 22, 0.12);
+  --shadow-lg:  0 12px 32px rgba(26, 25, 22, 0.16);
+
+  // --- Layout ---
+  --container-max:    1200px;
+  --container-narrow: 780px;
+  --sidebar-width:    280px;
+  --header-height:    72px;
+  --bar-height:       40px;
+
+  // --- Z-index ---
+  --z-base:    1;
+  --z-dropdown:50;
+  --z-sticky:  100;
+  --z-overlay: 200;
+  --z-modal:   300;
+  --z-toast:   400;
+
+  // --- Transitions ---
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:    cubic-bezier(0.4, 0, 1, 1);
+  --ease-inout: cubic-bezier(0.45, 0, 0.55, 1);
+  --duration-fast:   150ms;
+  --duration-normal: 250ms;
+  --duration-slow:   400ms;
+
+  // Shorthand transitions
+  --transition-base:    var(--duration-normal) var(--ease-out);
+  --transition-fast:    var(--duration-fast) var(--ease-out);
+  --transition-slow:    var(--duration-slow) var(--ease-out);
+}

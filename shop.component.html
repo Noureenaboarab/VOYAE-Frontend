@@ -1,0 +1,130 @@
+<main class="shop page-wrapper">
+  <div class="container">
+
+    <!-- Page header -->
+    <div class="shop__header">
+      <div>
+        <p class="eyebrow">All Products</p>
+        <h1 class="display-md">The Collection</h1>
+      </div>
+      <div class="shop__header-controls">
+        <span class="text-muted" style="font-size: var(--text-sm)">
+          {{ products().length }} products
+        </span>
+        <div class="shop__sort">
+          <label for="sort" class="sr-only">Sort by</label>
+          <select
+            id="sort"
+            class="form-select shop__sort-select"
+            [value]="filter().sortBy"
+            (change)="onSortChange($any($event.target).value)">
+            @for (opt of sortOptions; track opt.value) {
+              <option [value]="opt.value">Sort: {{ opt.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="shop-layout">
+
+      <!-- ======= FILTER SIDEBAR ======= -->
+      <aside class="shop__filters" aria-label="Product filters">
+
+        <!-- Size -->
+        <div class="filter-group">
+          <h2 class="filter-group__title">Size</h2>
+          @for (size of sizes; track size.id) {
+            <button
+              class="filter-option"
+              [class.is-active]="isSizeActive(size.id)"
+              (click)="toggleSize(size.id)">
+              {{ size.label }}
+            </button>
+          }
+        </div>
+
+        <!-- Color -->
+        <div class="filter-group">
+          <h2 class="filter-group__title">Color</h2>
+          @for (color of colors; track color.id) {
+            <button
+              class="filter-option"
+              [class.is-active]="isColorActive(color.id)"
+              (click)="toggleColor(color.id)">
+              <span
+                class="color-swatch"
+                [class.is-active]="isColorActive(color.id)"
+                [style.background-color]="color.hex">
+              </span>
+              {{ color.label }}
+            </button>
+          }
+        </div>
+
+        <!-- Price -->
+        <div class="filter-group">
+          <h2 class="filter-group__title">Price</h2>
+          <div class="price-filter">
+            <label class="price-filter__option">
+              <input type="checkbox" (change)="onPriceChange(0, 300)" /> Under $300
+            </label>
+            <label class="price-filter__option">
+              <input type="checkbox" checked (change)="onPriceChange(300, 400)" /> $300 – $400
+            </label>
+            <label class="price-filter__option">
+              <input type="checkbox" (change)="onPriceChange(400, 500)" /> $400 – $500
+            </label>
+            <label class="price-filter__option">
+              <input type="checkbox" (change)="onPriceChange(500, 9999)" /> Over $500
+            </label>
+          </div>
+          <div class="price-range-inputs">
+            <div class="form-group">
+              <label class="form-label">Min</label>
+              <input
+                type="number"
+                class="form-control"
+                [value]="filter().priceMin"
+                placeholder="$0"
+                (change)="onPriceChange(+$any($event.target).value, filter().priceMax)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Max</label>
+              <input
+                type="number"
+                class="form-control"
+                [value]="filter().priceMax === 9999 ? '' : filter().priceMax"
+                placeholder="$999"
+                (change)="onPriceChange(filter().priceMin, +$any($event.target).value || 9999)" />
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn--ghost btn--full" (click)="resetFilters()">
+          Clear all filters
+        </button>
+      </aside>
+
+      <!-- ======= PRODUCT GRID ======= -->
+      <section aria-label="Products">
+        @if (products().length === 0) {
+          <div class="shop__empty">
+            <p class="display-sm">No products match your filters.</p>
+            <button class="btn btn--ghost" (click)="resetFilters()">Clear filters</button>
+          </div>
+        } @else {
+          <div class="grid grid--3">
+            @for (product of products(); track product.id) {
+              <voy-product-card
+                [product]="product"
+                [wishlisted]="isWishlisted(product.id)"
+                (wishlistToggle)="onWishlistToggle($event)" />
+            }
+          </div>
+        }
+      </section>
+
+    </div>
+  </div>
+</main>
