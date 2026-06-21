@@ -1,0 +1,55 @@
+<article class="product-card" (click)="navigateToProduct()" (keydown.enter)="navigateToProduct()" tabindex="0" [attr.aria-label]="product.name">
+  <div class="product-card__image">
+    @if (product.images[0]) {
+      <img [src]="product.images[0]" [alt]="product.name" loading="lazy" />
+    } @else {
+      <div class="product-card__image-placeholder"></div>
+    }
+  </div>
+
+  <!-- Badges -->
+  <div class="product-card__badges">
+    @if (product.isBestseller) {
+      <span class="badge badge--bestseller">Bestseller</span>
+    }
+    @if (product.isNew) {
+      <span class="badge badge--new">New</span>
+    }
+    @if (!product.inStock) {
+      <span class="badge badge--sale">Sold Out</span>
+    }
+  </div>
+
+  <!-- Wishlist -->
+  <button
+    class="product-card__wishlist"
+    [class.is-active]="wishlisted"
+    [attr.aria-label]="wishlisted ? 'Remove from wishlist' : 'Add to wishlist'"
+    [attr.aria-pressed]="wishlisted"
+    (click)="onWishlistToggle($event)">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path
+        d="M8 13.5S1.5 9.5 1.5 5A3.5 3.5 0 018 3.176 3.5 3.5 0 0114.5 5C14.5 9.5 8 13.5 8 13.5z"
+        [attr.fill]="wishlisted ? 'currentColor' : 'none'"
+        stroke="currentColor"
+        stroke-width="1.3"/>
+    </svg>
+  </button>
+
+  <!-- Body -->
+  <div class="product-card__body">
+    <p class="product-card__eyebrow">{{ product.type }}</p>
+    <div class="product-card__footer">
+      <h3 class="product-card__name">{{ product.name }}</h3>
+      <span class="price text-terra">\${{ product.price }}</span>
+    </div>
+    <div class="product-card__cta">
+      <button
+        class="btn btn--secondary btn--full"
+        [disabled]="!product.inStock"
+        (click)="onAddToBag($event)">
+        {{ product.inStock ? 'Add to bag' : 'Sold out' }}
+      </button>
+    </div>
+  </div>
+</article>
