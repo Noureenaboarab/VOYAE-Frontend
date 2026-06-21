@@ -1,7 +1,7 @@
 // ============================================================
-// VOYÆ — Product Detail Page (stub — ready to build out)
+// VOYÆ — Product Detail Page
 // ============================================================
-import { Component, Input, inject, signal, OnInit } from '@angular/core';
+import { Component, Input, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../../core/services/product.service';
@@ -25,6 +25,19 @@ export class ProductDetailComponent implements OnInit {
   selectedColor = signal<ProductColor | undefined>(undefined);
   addedToBag    = signal(false);
   activeImage   = signal(0);
+
+  // Derived: label of currently selected colour — safe to use in template (no arrow fn)
+  selectedColorLabel = computed(() => {
+    const p = this.product();
+    const c = this.selectedColor();
+    if (!p || !c) return '';
+    return p.colorOptions.find(opt => opt.id === c)?.label ?? '';
+  });
+
+  // Derived: whether selected colour matches a given swatch — used in template helper
+  isColorSelected(colorId: ProductColor): boolean {
+    return this.selectedColor() === colorId;
+  }
 
   ngOnInit(): void {
     const p = this.productService.getBySlug(this.slug);

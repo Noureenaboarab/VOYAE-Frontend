@@ -1,7 +1,7 @@
 // ============================================================
 // VOYÆ — Checkout Page
 // ============================================================
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,17 +16,17 @@ import { ShippingOption } from '../../core/models';
   styleUrl: './checkout.component.scss',
 })
 export class CheckoutComponent {
-  private fb     = inject(FormBuilder);
-  private cart   = inject(CartService);
-  private router = inject(Router);
+  private fb         = inject(FormBuilder);
+  private cartSvc    = inject(CartService);
+  private router     = inject(Router);
 
-  // Cart state
-  cartItems    = this.cart.items;
-  subtotal     = this.cart.subtotal;
-  shipping     = this.cart.shipping;
-  total        = this.cart.total;
-  couponCode   = this.cart.couponCode;
-  discount     = signal(0);
+  // Cart state — all public so the template can access them
+  cartItems    = this.cartSvc.items;
+  subtotal     = this.cartSvc.subtotal;
+  shipping     = this.cartSvc.shipping;
+  total        = this.cartSvc.total;
+  couponCode   = this.cartSvc.couponCode;
+  cartDiscount = computed(() => this.cartSvc.cart().discount ?? 0);
 
   // UI state
   couponInput     = signal('');
@@ -71,7 +71,7 @@ export class CheckoutComponent {
 
   applyCoupon(): void {
     const code = this.couponInput();
-    const success = this.cart.applyCoupon(code);
+    const success = this.cartSvc.applyCoupon(code);
     if (success) {
       this.couponApplied.set(true);
       this.couponError.set('');
@@ -82,7 +82,7 @@ export class CheckoutComponent {
   }
 
   removeCoupon(): void {
-    this.cart.removeCoupon();
+    this.cartSvc.removeCoupon();
     this.couponApplied.set(false);
     this.couponInput.set('');
   }
@@ -99,7 +99,7 @@ export class CheckoutComponent {
     this.placingOrder.set(true);
     // Simulate API call
     await new Promise(r => setTimeout(r, 1500));
-    this.cart.clear();
+    this.cartSvc.clear();
     this.router.navigate(['/order-confirmation']);
   }
 

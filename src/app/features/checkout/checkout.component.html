@@ -148,13 +148,13 @@
                   <label
                     class="radio-card"
                     [class.is-selected]="selectedShipping() === opt.id"
-                    (click)="selectShipping(opt.id)">
+                    (click)="selectShipping($any(opt.id))">
                     <input
                       type="radio"
                       name="shippingMethod"
                       [value]="opt.id"
                       [checked]="selectedShipping() === opt.id"
-                      (change)="selectShipping(opt.id)" />
+                      (change)="selectShipping($any(opt.id))" />
                     <div class="radio-card__content">
                       <span class="radio-card__label">{{ opt.label }}</span>
                       <span class="radio-card__sub">{{ opt.description }}</span>
@@ -326,7 +326,7 @@
           @if (couponApplied()) {
             <div class="price-line price-line--discount">
               <span>Discount ({{ couponCode() }})</span>
-              <span>−{{ formatPrice(cart.cart().discount ?? 0) }}</span>
+              <span>−{{ formatPrice(cartDiscount()) }}</span>
             </div>
           }
           <div class="price-line">
