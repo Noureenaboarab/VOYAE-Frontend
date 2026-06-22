@@ -185,7 +185,7 @@
             </div>
           }
 
-          <!-- ORDERS (placeholder) -->
+          <!-- ORDERS -->
           @case ('orders') {
             <div class="account-content-block">
               <h1 class="account-content-block__title">Orders</h1>
@@ -209,12 +209,10 @@
             </div>
           }
 
-          <!-- OTHER SECTIONS (placeholder) -->
+          <!-- OTHER SECTIONS — use computed signal, no arrow fn -->
           @default {
             <div class="account-content-block">
-              <h1 class="account-content-block__title">
-                {{ navItems.find(n => n.id === activeSection())?.label }}
-              </h1>
+              <h1 class="account-content-block__title">{{ activeSectionLabel() }}</h1>
               <p class="body-base text-muted" style="margin-top: var(--space-4)">
                 This section is ready to be built out.
               </p>

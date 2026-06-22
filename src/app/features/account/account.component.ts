@@ -1,7 +1,7 @@
 // ============================================================
 // VOYÆ — Account / Profile Page
 // ============================================================
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Order, UserProfile } from '../../core/models';
@@ -18,6 +18,21 @@ type AccountSection = 'personal' | 'orders' | 'wishlist' | 'addresses' | 'paymen
 export class AccountComponent {
   activeSection = signal<AccountSection>('personal');
   editingProfile = signal(false);
+
+  navItems: { id: AccountSection; label: string; icon: string }[] = [
+    { id: 'personal',    label: 'Personal Info',    icon: 'user' },
+    { id: 'orders',      label: 'Orders',           icon: 'box' },
+    { id: 'wishlist',    label: 'Wishlist',         icon: 'heart' },
+    { id: 'addresses',   label: 'Addresses',        icon: 'map-pin' },
+    { id: 'payment',     label: 'Payment Methods',  icon: 'credit-card' },
+    { id: 'preferences', label: 'Preferences',      icon: 'settings' },
+  ];
+
+  // Computed signal so the template never needs an arrow function in interpolation
+  activeSectionLabel = computed(() => {
+    const id = this.activeSection();
+    return this.navItems.find(n => n.id === id)?.label ?? '';
+  });
 
   profile: UserProfile = {
     firstName:   'Sarah',
@@ -52,15 +67,6 @@ export class AccountComponent {
       status: 'delivered',
       total: 445,
     },
-  ];
-
-  navItems: { id: AccountSection; label: string; icon: string }[] = [
-    { id: 'personal',    label: 'Personal Info',    icon: 'user' },
-    { id: 'orders',      label: 'Orders',           icon: 'box' },
-    { id: 'wishlist',    label: 'Wishlist',         icon: 'heart' },
-    { id: 'addresses',   label: 'Addresses',        icon: 'map-pin' },
-    { id: 'payment',     label: 'Payment Methods',  icon: 'credit-card' },
-    { id: 'preferences', label: 'Preferences',      icon: 'settings' },
   ];
 
   setSection(id: AccountSection): void {

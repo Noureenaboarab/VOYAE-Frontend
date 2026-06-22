@@ -36,10 +36,10 @@
             </p>
           }
 
-          <!-- Color selector -->
+          <!-- Color selector — use computed signal, no arrow fn in template -->
           <div style="margin-top: var(--space-8)">
             <p class="form-label" style="margin-bottom: var(--space-3)">
-              Colour — {{ p.colorOptions.find(c => c.id === selectedColor())?.label }}
+              Colour — {{ selectedColorLabel() }}
             </p>
             <div class="product-detail__colors">
               @for (c of p.colorOptions; track c.id) {
