@@ -1,10 +1,8 @@
 :host { display: block; }
 
 .header {
-  position: fixed;
-  top: var(--bar-height);
-  left: 0;
-  right: 0;
+  position: sticky;
+  top: 0;
   z-index: var(--z-sticky);
   height: var(--header-height);
   background-color: var(--color-parchment);
@@ -182,6 +180,7 @@
     flex-direction: column;
     gap: var(--space-4);
     animation: slideDown var(--duration-normal) var(--ease-out);
+    z-index: var(--z-dropdown);
   }
 
   &__mobile-link {
