@@ -24,11 +24,11 @@ export class CartComponent {
   itemCount = this.cartService.itemCount;
 
   remove(item: CartItem): void {
-    this.cartService.removeItem(item.product.id, item.selectedColor);
+    this.cartService.removeItem(item.product.id);
   }
 
   updateQty(item: CartItem, qty: number): void {
-    this.cartService.updateQuantity(item.product.id, item.selectedColor, qty);
+    this.cartService.updateQuantity(item.product.id, qty);
   }
 
   formatPrice(n: number): string {

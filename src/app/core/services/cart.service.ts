@@ -54,24 +54,24 @@ export class CartService {
     });
   }
 
-  removeItem(productId: string, color: ProductColor): void {
+  removeItem(productId: string): void {
     this.cart.update(cart => ({
       ...cart,
       items: cart.items.filter(
-        i => !(i.product.id === productId && i.color === color)
+        i => !(i.product.id === productId)
       ),
     }));
   }
 
-  updateQuantity(productId: string, color: ProductColor, quantity: number): void {
+  updateQuantity(productId: string, quantity: number): void {
     if (quantity <= 0) {
-      this.removeItem(productId, color);
+      this.removeItem(productId);
       return;
     }
     this.cart.update(cart => ({
       ...cart,
       items: cart.items.map(i =>
-        i.product.id === productId && i.color === color ? { ...i, quantity } : i
+        i.product.id === productId ? { ...i, quantity } : i
       ),
     }));
   }
