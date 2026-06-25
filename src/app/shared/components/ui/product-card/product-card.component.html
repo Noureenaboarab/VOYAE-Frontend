@@ -1,7 +1,7 @@
 <article class="product-card" (click)="navigateToProduct()" (keydown.enter)="navigateToProduct()" tabindex="0" [attr.aria-label]="product.name">
   <div class="product-card__image">
-    @if (product.images[0]) {
-      <img [src]="product.images[0]" [alt]="product.name" loading="lazy" />
+    @if (product.imageUrl) {
+      <img [src]="product.imageUrl" [alt]="product.name" loading="lazy" />
     } @else {
       <div class="product-card__image-placeholder"></div>
     }
@@ -17,6 +17,9 @@
     }
     @if (!product.inStock) {
       <span class="badge badge--sale">Sold Out</span>
+    }
+    @if (product.discount > 0) {
+      <span class="badge badge--sale">{{ product.discount }}% off</span>
     }
   </div>
 
@@ -41,7 +44,7 @@
     <p class="product-card__eyebrow">{{ product.type }}</p>
     <div class="product-card__footer">
       <h3 class="product-card__name">{{ product.name }}</h3>
-      <span class="price text-terra">${{ product.price }}</span>
+      <span class="price text-terra">{{ displayPrice }}</span>
     </div>
     <div class="product-card__cta">
       <button

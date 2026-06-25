@@ -1,14 +1,11 @@
 // ============================================================
-// VOYÆ — Shop / Collection Page
+// VOYÆ — Shop / Collection Page (backend-aligned)
 // ============================================================
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
 import { ProductCardComponent } from '../../shared/components/ui/product-card/product-card.component';
-import { ProductSize, ProductColor } from '../../core/models';
-
-interface ColorSwatch { id: ProductColor; label: string; hex: string; }
 
 @Component({
   selector: 'voy-shop',
@@ -20,8 +17,11 @@ interface ColorSwatch { id: ProductColor; label: string; hex: string; }
 export class ShopComponent {
   private productService = inject(ProductService);
 
-  products = this.productService.filteredProducts;
-  filter   = this.productService.filter;
+  products       = this.productService.filteredProducts;
+  filter         = this.productService.filter;
+  availableTypes = this.productService.availableTypes;
+  loading        = this.productService.loading;
+  error          = this.productService.error;
 
   wishlist = signal<Set<string>>(new Set());
 
@@ -32,40 +32,16 @@ export class ShopComponent {
     { value: 'newest',     label: 'Newest' },
   ];
 
-  sizes: { id: ProductSize; label: string }[] = [
-    { id: 'carry-on', label: 'Carry-On' },
-    { id: 'check-in', label: 'Check-In' },
-    { id: 'large',    label: 'Large' },
-    { id: 'set',      label: 'Set' },
-  ];
-
-  colors: ColorSwatch[] = [
-    { id: 'desert-sand',    label: 'Desert Sand',    hex: '#C4724E' },
-    { id: 'obsidian-black', label: 'Obsidian Black', hex: '#1A1916' },
-    { id: 'chalk-white',    label: 'Chalk White',    hex: '#F0EDE8' },
-    { id: 'slate-grey',     label: 'Slate Grey',     hex: '#7A7A7A' },
-    { id: 'navy-blue',      label: 'Navy Blue',      hex: '#1B2A4A' },
-    { id: 'forest-green',   label: 'Forest Green',   hex: '#2D4A34' },
-  ];
-
-  isSizeActive(size: ProductSize): boolean {
-    return this.filter().sizes.includes(size);
-  }
-
-  isColorActive(color: ProductColor): boolean {
-    return this.filter().colors.includes(color);
+  isTypeActive(type: string): boolean {
+    return this.filter().types.includes(type);
   }
 
   isWishlisted(productId: string): boolean {
     return this.wishlist().has(productId);
   }
 
-  toggleSize(size: ProductSize): void {
-    this.productService.toggleSize(size);
-  }
-
-  toggleColor(color: ProductColor): void {
-    this.productService.toggleColor(color);
+  toggleType(type: string): void {
+    this.productService.toggleType(type);
   }
 
   onSortChange(value: string): void {
