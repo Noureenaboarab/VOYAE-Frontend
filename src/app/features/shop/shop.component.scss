@@ -36,7 +36,7 @@
   &__filters {
     // sticky on desktop — offset is just header height since both bar + header are sticky
     position: sticky;
-    top: calc(var(--header-height) + var(--bar-height) + var(--space-6));
+    top: calc(var(--header-height) + var(--space-6));
   }
 
   &__empty {

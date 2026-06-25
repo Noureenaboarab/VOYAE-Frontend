@@ -24,6 +24,7 @@
 // so no extra top padding is needed here.
 .page-wrapper {
   min-height: 100vh;
+  padding-top: var(--header-height);
 }
 
 // Section spacing

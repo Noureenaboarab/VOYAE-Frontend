@@ -18,12 +18,14 @@ import { SearchModalComponent } from './shared/components/ui/search-modal/search
     FooterComponent,
     SearchModalComponent,
   ],
-  template: `
+template: `
+  <div class="site-top">
     <voy-announcement-bar />
     <voy-header />
-    <router-outlet />
-    <voy-footer />
-    <voy-search-modal />
-  `,
+  </div>
+  <router-outlet />
+  <voy-footer />
+  <voy-search-modal />
+`,
 })
 export class AppComponent {}
