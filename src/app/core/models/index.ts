@@ -100,3 +100,23 @@ export interface ProductFilter {
   priceMax: number;
   sortBy:   'featured' | 'price-asc' | 'price-desc' | 'newest';
 }
+
+export interface AiSearchRequest {
+  query: string;
+}
+
+export interface ProductRecommendation {
+  id: number;
+  name: string;
+  description: string;
+  basePrice: number;
+  discount: number;
+  categoryName: string;
+  imageUrl: string | null;
+  quantity: number;
+}
+
+export interface AiSearchResponse {
+  summary: string;
+  products: ProductRecommendation[];
+}
