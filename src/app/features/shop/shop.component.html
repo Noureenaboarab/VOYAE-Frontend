@@ -31,36 +31,20 @@
       <!-- ======= FILTER SIDEBAR ======= -->
       <aside class="shop__filters" aria-label="Product filters">
 
-        <!-- Size -->
-        <div class="filter-group">
-          <h2 class="filter-group__title">Size</h2>
-          @for (size of sizes; track size.id) {
-            <button
-              class="filter-option"
-              [class.is-active]="isSizeActive(size.id)"
-              (click)="toggleSize(size.id)">
-              {{ size.label }}
-            </button>
-          }
-        </div>
-
-        <!-- Color -->
-        <div class="filter-group">
-          <h2 class="filter-group__title">Color</h2>
-          @for (color of colors; track color.id) {
-            <button
-              class="filter-option"
-              [class.is-active]="isColorActive(color.id)"
-              (click)="toggleColor(color.id)">
-              <span
-                class="color-swatch"
-                [class.is-active]="isColorActive(color.id)"
-                [style.background-color]="color.hex">
-              </span>
-              {{ color.label }}
-            </button>
-          }
-        </div>
+        <!-- Category / Type -->
+        @if (availableTypes().length > 0) {
+          <div class="filter-group">
+            <h2 class="filter-group__title">Category</h2>
+            @for (type of availableTypes(); track type) {
+              <button
+                class="filter-option"
+                [class.is-active]="isTypeActive(type)"
+                (click)="toggleType(type)">
+                {{ type }}
+              </button>
+            }
+          </div>
+        }
 
         <!-- Price -->
         <div class="filter-group">
@@ -70,7 +54,7 @@
               <input type="checkbox" (change)="onPriceChange(0, 300)" /> Under $300
             </label>
             <label class="price-filter__option">
-              <input type="checkbox" checked (change)="onPriceChange(300, 400)" /> $300 – $400
+              <input type="checkbox" (change)="onPriceChange(300, 400)" /> $300 – $400
             </label>
             <label class="price-filter__option">
               <input type="checkbox" (change)="onPriceChange(400, 500)" /> $400 – $500
@@ -108,7 +92,16 @@
 
       <!-- ======= PRODUCT GRID ======= -->
       <section aria-label="Products">
-        @if (products().length === 0) {
+        @if (loading()) {
+          <div class="shop__empty">
+            <p class="text-muted">Loading products…</p>
+          </div>
+        } @else if (error()) {
+          <div class="shop__empty">
+            <p class="text-muted">{{ error() }}</p>
+            <button class="btn btn--ghost" (click)="resetFilters()">Retry</button>
+          </div>
+        } @else if (products().length === 0) {
           <div class="shop__empty">
             <p class="display-sm">No products match your filters.</p>
             <button class="btn btn--ghost" (click)="resetFilters()">Clear filters</button>

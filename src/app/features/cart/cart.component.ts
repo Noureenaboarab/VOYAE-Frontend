@@ -5,7 +5,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../core/services/cart.service';
-import { CartItem, ProductColor } from '../../core/models';
+import { CartItem } from '../../core/models';
 
 @Component({
   selector: 'voy-cart',

@@ -1,3 +1,6 @@
+// ============================================================
+// VOYÆ — Product Card (backend-aligned)
+// ============================================================
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -19,7 +22,7 @@ export class ProductCardComponent {
   private cart   = inject(CartService);
 
   navigateToProduct(): void {
-    this.router.navigate(['/product', this.product.slug]);
+    this.router.navigate(['/product', this.product.id]);
   }
 
   onWishlistToggle(event: Event): void {
@@ -29,6 +32,14 @@ export class ProductCardComponent {
 
   onAddToBag(event: Event): void {
     event.stopPropagation();
-    this.cart.addItem(this.product, this.product.color);
+    this.cart.addItem(this.product);
+  }
+
+  get displayPrice(): string {
+    if (this.product.discount > 0) {
+      const final = this.product.price * (1 - this.product.discount / 100);
+      return `$${final.toFixed(0)}`;
+    }
+    return `$${this.product.price}`;
   }
 }
