@@ -1,11 +1,11 @@
 // ============================================================
-// VOYÆ — Cart Service
+// VOYÆ — Cart Service (backend-aligned)
 // ============================================================
 import { Injectable, signal, computed } from '@angular/core';
-import { Cart, CartItem, Product, ProductColor } from '../models';
+import { Cart, CartItem, Product } from '../models';
 
 const VALID_COUPONS: Record<string, number> = {
-  'VOYAE10':  10,
+  'VOYAE10':   10,
   'WELCOME20': 20,
   'SUMMER15':  15,
 };
@@ -14,7 +14,7 @@ const VALID_COUPONS: Record<string, number> = {
 export class CartService {
   readonly cart = signal<Cart>({ items: [], discount: 0 });
 
-  readonly items    = computed(() => this.cart().items);
+  readonly items      = computed(() => this.cart().items);
   readonly couponCode = computed(() => this.cart().coupon ?? '');
 
   readonly subtotal = computed(() =>
@@ -38,18 +38,16 @@ export class CartService {
     this.cart().items.reduce((sum, i) => sum + i.quantity, 0)
   );
 
-  addItem(product: Product, color: ProductColor, quantity = 1): void {
+  addItem(product: Product, quantity = 1): void {
     this.cart.update(cart => {
-      const existing = cart.items.find(
-        i => i.product.id === product.id && i.color === color
-      );
+      const existing = cart.items.find(i => i.product.id === product.id);
       const items = existing
         ? cart.items.map(i =>
-            i.product.id === product.id && i.color === color
+            i.product.id === product.id
               ? { ...i, quantity: i.quantity + quantity }
               : i
           )
-        : [...cart.items, { product, color, quantity }];
+        : [...cart.items, { product, quantity }];
       return { ...cart, items };
     });
   }
@@ -57,9 +55,7 @@ export class CartService {
   removeItem(productId: string): void {
     this.cart.update(cart => ({
       ...cart,
-      items: cart.items.filter(
-        i => !(i.product.id === productId)
-      ),
+      items: cart.items.filter(i => i.product.id !== productId),
     }));
   }
 

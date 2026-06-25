@@ -248,7 +248,7 @@
           @for (item of cartItems(); track item.product.id) {
             <div class="order-item">
               <img
-                [src]="item.product.images[0]"
+                [src]="item.product.imageUrl"
                 [alt]="item.product.name"
                 class="order-item__image" />
               <div class="order-item__info">

@@ -3,57 +3,39 @@
     <div class="container">
       <div class="product-detail__grid">
 
-        <!-- Images -->
+        <!-- Image -->
         <div class="product-detail__images">
           <div class="product-detail__main-image">
-            <img [src]="p.images[activeImage()]" [alt]="p.name" />
+            @if (p.imageUrl) {
+              <img [src]="p.imageUrl" [alt]="p.name" />
+            } @else {
+              <div class="product-detail__image-placeholder"></div>
+            }
           </div>
-          @if (p.images.length > 1) {
-            <div class="product-detail__thumbs">
-              @for (img of p.images; track $index) {
-                <button
-                  class="product-detail__thumb"
-                  [class.is-active]="activeImage() === $index"
-                  (click)="activeImage.set($index)">
-                  <img [src]="img" [alt]="p.name + ' view ' + ($index + 1)" />
-                </button>
-              }
-            </div>
-          }
         </div>
 
         <!-- Info -->
         <div class="product-detail__info">
           <p class="eyebrow">{{ p.type }}</p>
           <h1 class="display-md" style="margin-top: var(--space-2)">{{ p.name }}</h1>
-          <p class="price" style="font-size: var(--text-xl); margin-top: var(--space-4)">
-            {{ formatPrice(p.price) }}
-          </p>
+
+          <div style="margin-top: var(--space-4); display: flex; align-items: baseline; gap: var(--space-3)">
+            <p class="price" style="font-size: var(--text-xl)">
+              {{ formatPrice(p.price, p.discount) }}
+            </p>
+            @if (p.discount > 0) {
+              <p class="text-muted" style="text-decoration: line-through; font-size: var(--text-base)">
+                ${{ p.price }}
+              </p>
+              <span class="badge badge--sale">{{ p.discount }}% off</span>
+            }
+          </div>
 
           @if (p.description) {
             <p class="body-base text-muted" style="margin-top: var(--space-6)">
               {{ p.description }}
             </p>
           }
-
-          <!-- Color selector — use computed signal, no arrow fn in template -->
-          <div style="margin-top: var(--space-8)">
-            <p class="form-label" style="margin-bottom: var(--space-3)">
-              Colour — {{ selectedColorLabel() }}
-            </p>
-            <div class="product-detail__colors">
-              @for (c of p.colorOptions; track c.id) {
-                <button
-                  class="product-detail__color-swatch"
-                  [class.is-active]="selectedColor() === c.id"
-                  [style.background-color]="c.hex"
-                  [attr.aria-label]="c.label"
-                  [attr.aria-pressed]="selectedColor() === c.id"
-                  (click)="selectColor(c.id)">
-                </button>
-              }
-            </div>
-          </div>
 
           <!-- CTA -->
           <div style="margin-top: var(--space-8); display: flex; flex-direction: column; gap: var(--space-3)">
