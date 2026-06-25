@@ -1,9 +1,9 @@
 :host { display: block; }
 
 .announcement-bar {
-  position: sticky;
-  top: 0;
-  z-index: calc(var(--z-sticky) + 1); // sits above the header
+  // position: sticky;
+  // top: 0;
+  // z-index: calc(var(--z-sticky) + 1); // sits above the header
   background-color: var(--color-bar-bg);
   color: var(--color-bar-text);
   text-align: center;
