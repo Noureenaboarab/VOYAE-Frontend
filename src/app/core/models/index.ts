@@ -1,21 +1,6 @@
 // ============================================================
-// VOYÆ — Core Data Models
+// VOYÆ — Core Data Models (backend-aligned)
 // ============================================================
-
-export type ProductSize  = 'carry-on' | 'check-in' | 'large' | 'set';
-export type ProductColor =
-  | 'desert-sand'
-  | 'obsidian-black'
-  | 'chalk-white'
-  | 'slate-grey'
-  | 'navy-blue'
-  | 'forest-green';
-
-export interface ProductColorOption {
-  id:    ProductColor;
-  label: string;
-  hex:   string;
-}
 
 export interface ProductFeature {
   title:       string;
@@ -24,25 +9,21 @@ export interface ProductFeature {
 
 export interface Product {
   id:           string;
-  slug:         string;
   name:         string;
-  type:         string;          // e.g. "The Carry-On"
-  size:         ProductSize;
-  color:        ProductColor;
-  colorOptions: ProductColorOption[];
-  price:        number;
-  images:       string[];
-  inStock:      boolean;
-  isBestseller?: boolean;
-  isNew?:        boolean;
+  type:         string;        // category name, e.g. "The Carry-On"
+  price:        number;        // mapped from basePrice
+  discount:     number;        // 0 if none
+  imageUrl:     string;        // single image
+  inStock:      boolean;       // quantity > 0
+  isBestseller?: boolean;      // hardcoded in PRODUCT_META
+  isNew?:        boolean;      // hardcoded in PRODUCT_META
   description?:  string;
-  features?:     ProductFeature[];
-  createdAt:    Date;
+  features?:     ProductFeature[];  // hardcoded in PRODUCT_META
+  createdAt:    string;        // ISO string
 }
 
 export interface CartItem {
   product:  Product;
-  color:    ProductColor;
   quantity: number;
 }
 
@@ -55,8 +36,6 @@ export interface Cart {
 export interface OrderItem {
   productId: string;
   name:      string;
-  color:     ProductColor;
-  size:      ProductSize;
   quantity:  number;
   price:     number;
 }
@@ -94,8 +73,7 @@ export interface Testimonial {
 }
 
 export interface ProductFilter {
-  sizes:    ProductSize[];
-  colors:   ProductColor[];
+  types:    string[];
   priceMin: number;
   priceMax: number;
   sortBy:   'featured' | 'price-asc' | 'price-desc' | 'newest';
@@ -106,17 +84,38 @@ export interface AiSearchRequest {
 }
 
 export interface ProductRecommendation {
-  id: number;
-  name: string;
-  description: string;
-  basePrice: number;
-  discount: number;
+  id:           number;
+  name:         string;
+  description:  string;
+  basePrice:    number;
+  discount:     number;
   categoryName: string;
-  imageUrl: string | null;
-  quantity: number;
+  imageUrl:     string | null;
+  quantity:     number;
 }
 
 export interface AiSearchResponse {
-  summary: string;
+  summary:  string;
   products: ProductRecommendation[];
+}
+
+// Raw shape the Spring backend returns for a Product entity or DTO.
+// Handles both a flat DTO (categoryName) and a nested entity (category.name).
+export interface ProductDTO {
+  id:           number;
+  name:         string;
+  description:  string;
+  // Spring serialises BigDecimal as a number in JSON by default
+  basePrice:    number | string;
+  discount:     number | string;
+  // Flat DTO field (if backend maps category → categoryName)
+  categoryName?: string;
+  // Nested entity field (if backend returns the Category object directly)
+  category?:    { id?: number; name?: string };
+  imageUrl:     string | null;
+  // Flat DTO field (if backend derives inStock from quantity)
+  inStock?:     boolean;
+  // Raw entity field
+  quantity?:    number;
+  createdAt:    string;
 }

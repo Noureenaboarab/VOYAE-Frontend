@@ -1,207 +1,240 @@
 // ============================================================
-// VOYÆ — Product Service
+// VOYÆ — Product Service (backend-aligned, mock data preserved)
 // ============================================================
-import { Injectable, signal, computed } from '@angular/core';
-import { Product, ProductFilter, ProductSize, ProductColor, ProductColorOption, ProductFeature } from '../models';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Product, ProductDTO, ProductFeature, ProductFilter } from '../models';
 
-const COLOR_OPTIONS: ProductColorOption[] = [
-  { id: 'desert-sand',    label: 'Desert Sand',    hex: '#C4724E' },
-  { id: 'obsidian-black', label: 'Obsidian Black', hex: '#1A1916' },
-  { id: 'chalk-white',    label: 'Chalk White',    hex: '#F0EDE8' },
-  { id: 'slate-grey',     label: 'Slate Grey',     hex: '#7A7A7A' },
-  { id: 'navy-blue',      label: 'Navy Blue',      hex: '#1B2A4A' },
-  { id: 'forest-green',   label: 'Forest Green',   hex: '#2D4A34' },
-];
+// ── Hardcoded per-product metadata ───────────────────────────
+interface ProductMeta {
+  features?:     ProductFeature[];
+  isBestseller?: boolean;
+  isNew?:        boolean;
+}
 
 const CARRY_ON_FEATURES: ProductFeature[] = [
-  { title: 'Polycarbonate Shell', description: 'Flex-resistant outer shell engineered to absorb impact and spring back to form, every single time.' },
-  { title: 'TSA-Approved Lock',   description: 'Integrated combination lock that TSA agents can open without damaging your luggage.' },
-  { title: 'Silent Spinner Wheels', description: 'Precision-engineered 360° spinner wheels roll effortlessly over any surface without a sound.' },
+  { title: 'Polycarbonate Shell',           description: 'Flex-resistant outer shell engineered to absorb impact and spring back to form, every single time.' },
+  { title: 'TSA-Approved Lock',             description: 'Integrated combination lock that TSA agents can open without damaging your luggage.' },
+  { title: 'Silent Spinner Wheels',         description: 'Precision-engineered 360° spinner wheels roll effortlessly over any surface without a sound.' },
   { title: 'Aircraft-Grade Aluminum Frame', description: 'Telescoping handle constructed from lightweight yet incredibly strong aircraft-grade aluminum.' },
 ];
 
+// ── Mock data ─────────────────────────────────────────────────
+// Matches the updated Product interface (no slug/size/color/colorOptions/images[]).
+// This is the source of truth until the backend API is wired up.
 const MOCK_PRODUCTS: Product[] = [
   {
-    id:           'co-desert-sand',
-    slug:         'carry-on-desert-sand',
+    id:           '1',
     name:         'Desert Sand',
     type:         'The Carry-On',
-    size:         'carry-on',
-    color:        'desert-sand',
-    colorOptions: COLOR_OPTIONS,
     price:        295,
-    images:       ['/assets/images/carry-on-desert-sand.jpg', '/assets/images/carry-on-desert-sand-2.jpg', '/assets/images/carry-on-desert-sand-3.jpg'],
+    discount:     0,
+    imageUrl:     '/assets/images/carry-on-desert-sand.jpg',
     inStock:      true,
     isBestseller: true,
     description:  'The Carry-On in Desert Sand. Precision-built for people who move through the world with intent.',
     features:     CARRY_ON_FEATURES,
-    createdAt:    new Date('2023-01-01'),
+    createdAt:    '2023-01-01T00:00:00',
   },
   {
-    id:           'co-obsidian-black',
-    slug:         'carry-on-obsidian-black',
+    id:           '2',
     name:         'Obsidian Black',
     type:         'The Carry-On',
-    size:         'carry-on',
-    color:        'obsidian-black',
-    colorOptions: COLOR_OPTIONS,
     price:        295,
-    images:       ['/assets/images/carry-on-obsidian-black.jpg'],
+    discount:     0,
+    imageUrl:     '/assets/images/carry-on-obsidian-black.jpg',
     inStock:      true,
     description:  'The Carry-On in Obsidian Black. A timeless silhouette for the modern traveller.',
     features:     CARRY_ON_FEATURES,
-    createdAt:    new Date('2023-01-02'),
+    createdAt:    '2023-01-02T00:00:00',
   },
   {
-    id:           'co-chalk-white',
-    slug:         'carry-on-chalk-white',
+    id:           '3',
     name:         'Chalk White',
     type:         'The Carry-On',
-    size:         'carry-on',
-    color:        'chalk-white',
-    colorOptions: COLOR_OPTIONS,
     price:        295,
-    images:       ['/assets/images/carry-on-chalk-white.jpg', '/assets/images/carry-on-chalk-white-2.jpg', '/assets/images/carry-on-chalk-white-3.jpg'],
+    discount:     0,
+    imageUrl:     '/assets/images/carry-on-chalk-white.jpg',
     inStock:      true,
     description:  'The Carry-On in Chalk White. Clean, crisp, and built to last.',
     features:     CARRY_ON_FEATURES,
-    createdAt:    new Date('2023-01-03'),
+    createdAt:    '2023-01-03T00:00:00',
   },
   {
-    id:           'ci-desert-sand',
-    slug:         'check-in-desert-sand',
+    id:           '4',
     name:         'Desert Sand',
     type:         'The Check-In',
-    size:         'check-in',
-    color:        'desert-sand',
-    colorOptions: COLOR_OPTIONS,
     price:        395,
-    images:       ['/assets/images/check-in-desert-sand.jpg'],
+    discount:     0,
+    imageUrl:     '/assets/images/check-in-desert-sand.jpg',
     inStock:      true,
     isNew:        true,
     description:  'The Check-In in Desert Sand. More space, same uncompromising construction.',
     features:     CARRY_ON_FEATURES,
-    createdAt:    new Date('2024-01-01'),
+    createdAt:    '2024-01-01T00:00:00',
   },
   {
-    id:           'ci-obsidian-black',
-    slug:         'check-in-obsidian-black',
+    id:           '5',
     name:         'Obsidian Black',
     type:         'The Check-In',
-    size:         'check-in',
-    color:        'obsidian-black',
-    colorOptions: COLOR_OPTIONS,
     price:        395,
-    images:       ['/assets/images/check-in-obsidian-black.jpg'],
+    discount:     0,
+    imageUrl:     '/assets/images/check-in-obsidian-black.jpg',
     inStock:      true,
     description:  'The Check-In in Obsidian Black.',
     features:     CARRY_ON_FEATURES,
-    createdAt:    new Date('2023-06-01'),
+    createdAt:    '2023-06-01T00:00:00',
   },
   {
-    id:           'lg-slate-grey',
-    slug:         'large-slate-grey',
+    id:           '6',
     name:         'Slate Grey',
     type:         'The Large',
-    size:         'large',
-    color:        'slate-grey',
-    colorOptions: COLOR_OPTIONS,
     price:        445,
-    images:       ['/assets/images/large-slate-grey.jpg'],
+    discount:     0,
+    imageUrl:     '/assets/images/large-slate-grey.jpg',
     inStock:      true,
     description:  'The Large in Slate Grey. Built for the long journey.',
     features:     CARRY_ON_FEATURES,
-    createdAt:    new Date('2023-03-01'),
+    createdAt:    '2023-03-01T00:00:00',
   },
   {
-    id:           'lg-navy-blue',
-    slug:         'large-navy-blue',
+    id:           '7',
     name:         'Navy Blue',
     type:         'The Large',
-    size:         'large',
-    color:        'navy-blue',
-    colorOptions: COLOR_OPTIONS,
     price:        445,
-    images:       ['/assets/images/large-navy-blue.jpg'],
+    discount:     0,
+    imageUrl:     '/assets/images/large-navy-blue.jpg',
     inStock:      true,
     description:  'The Large in Navy Blue.',
     features:     CARRY_ON_FEATURES,
-    createdAt:    new Date('2023-04-01'),
+    createdAt:    '2023-04-01T00:00:00',
   },
   {
-    id:           'lg-forest-green',
-    slug:         'large-forest-green',
+    id:           '8',
     name:         'Forest Green',
     type:         'The Large',
-    size:         'large',
-    color:        'forest-green',
-    colorOptions: COLOR_OPTIONS,
     price:        445,
-    images:       ['/assets/images/large-forest-green.jpg'],
+    discount:     0,
+    imageUrl:     '/assets/images/large-forest-green.jpg',
     inStock:      false,
     description:  'The Large in Forest Green.',
     features:     CARRY_ON_FEATURES,
-    createdAt:    new Date('2023-05-01'),
+    createdAt:    '2023-05-01T00:00:00',
   },
 ];
 
+// ── DTO normaliser ────────────────────────────────────────────
+// Used only when the real API is called. Handles both a flat Spring DTO
+// (categoryName, inStock) and the raw @Entity shape (category.name, quantity).
+function toProduct(dto: ProductDTO): Product {
+  const type    = dto.categoryName ?? dto.category?.name ?? '';
+  const inStock = dto.inStock !== undefined
+    ? dto.inStock
+    : (dto.quantity ?? 0) > 0;
+
+  return {
+    id:          String(dto.id),
+    name:        dto.name,
+    type,
+    price:       Number(dto.basePrice),
+    discount:    Number(dto.discount ?? 0),
+    imageUrl:    dto.imageUrl ?? '',
+    inStock,
+    description: dto.description,
+    createdAt:   dto.createdAt,
+  };
+}
+
 const DEFAULT_FILTER: ProductFilter = {
-  sizes:    [],
-  colors:   [],
+  types:    [],
   priceMin: 0,
   priceMax: 9999,
   sortBy:   'featured',
 };
 
+// ── Service ──────────────────────────────────────────────────
 @Injectable({ providedIn: 'root' })
 export class ProductService {
+  private http = inject(HttpClient);
+
+  // Start with mock data so the UI is never empty
   private readonly _products = signal<Product[]>(MOCK_PRODUCTS);
-  readonly filter = signal<ProductFilter>({ ...DEFAULT_FILTER });
+  readonly loading            = signal(false);
+  readonly error              = signal<string | null>(null);
+  readonly filter             = signal<ProductFilter>({ ...DEFAULT_FILTER });
+
+  // Call this once the backend API is ready.
+  // Until then the UI runs entirely off MOCK_PRODUCTS above.
+  loadFromApi(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.http.get<ProductDTO[]>('/api/products').subscribe({
+      next: (dtos) => {
+        this._products.set(dtos.map(toProduct));
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load products', err);
+        this.error.set('Could not load products. Please try again.');
+        this.loading.set(false);
+      },
+    });
+  }
 
   readonly filteredProducts = computed(() => {
     const f   = this.filter();
     let items = this._products();
 
-    if (f.sizes.length)  items = items.filter(p => f.sizes.includes(p.size));
-    if (f.colors.length) items = items.filter(p => f.colors.includes(p.color));
-    items = items.filter(p => p.price >= f.priceMin && p.price <= f.priceMax);
+    if (f.types.length) {
+      items = items.filter(p => f.types.includes(p.type));
+    }
+    if (f.priceMin > 0) {
+      items = items.filter(p => p.price >= f.priceMin);
+    }
+    if (f.priceMax < 9999) {
+      items = items.filter(p => p.price <= f.priceMax);
+    }
 
     switch (f.sortBy) {
-      case 'price-asc':  items = [...items].sort((a, b) => a.price - b.price); break;
-      case 'price-desc': items = [...items].sort((a, b) => b.price - a.price); break;
-      case 'newest':     items = [...items].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()); break;
-      default:           items = [...items].sort((a, b) => (b.isBestseller ? 1 : 0) - (a.isBestseller ? 1 : 0)); break;
+      case 'price-asc':
+        items = [...items].sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        items = [...items].sort((a, b) => b.price - a.price);
+        break;
+      case 'newest':
+        items = [...items].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        break;
+      default:
+        items = [...items].sort(
+          (a, b) => (b.isBestseller ? 1 : 0) - (a.isBestseller ? 1 : 0)
+        );
+        break;
     }
+
     return items;
   });
 
+  readonly availableTypes = computed(() =>
+    [...new Set(this._products().map(p => p.type).filter(Boolean))].sort()
+  );
+
   getById(id: string): Product | undefined {
     return this._products().find(p => p.id === id);
-  }
-
-  getBySlug(slug: string): Product | undefined {
-    return this._products().find(p => p.slug === slug);
   }
 
   updateFilter(partial: Partial<ProductFilter>): void {
     this.filter.update(f => ({ ...f, ...partial }));
   }
 
-  toggleSize(size: ProductSize): void {
+  toggleType(type: string): void {
     this.filter.update(f => {
-      const sizes = f.sizes.includes(size)
-        ? f.sizes.filter(s => s !== size)
-        : [...f.sizes, size];
-      return { ...f, sizes };
-    });
-  }
-
-  toggleColor(color: ProductColor): void {
-    this.filter.update(f => {
-      const colors = f.colors.includes(color)
-        ? f.colors.filter(c => c !== color)
-        : [...f.colors, color];
-      return { ...f, colors };
+      const types = f.types.includes(type)
+        ? f.types.filter(t => t !== type)
+        : [...f.types, type];
+      return { ...f, types };
     });
   }
 

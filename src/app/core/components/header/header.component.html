@@ -17,9 +17,10 @@
     <!-- Primary nav -->
     <nav class="header__nav" aria-label="Primary navigation">
       <a routerLink="/shop"        routerLinkActive="is-active" class="header__nav-link">Shop</a>
-      <a routerLink="/collections" routerLinkActive="is-active" class="header__nav-link">Collections</a>
       <a routerLink="/about"       routerLinkActive="is-active" class="header__nav-link">About</a>
-      <a routerLink="/journal"     routerLinkActive="is-active" class="header__nav-link">Journal</a>
+      <a routerLink="/ai-advisor"  routerLinkActive="is-active" class="header__nav-link header__nav-link--ai">
+        ✦ AI Advisor 
+      </a>
     </nav>
 
     <!-- Actions -->
@@ -61,9 +62,10 @@
   @if (menuOpen()) {
     <nav class="header__mobile-nav" aria-label="Mobile navigation">
       <a routerLink="/shop"        (click)="menuOpen.set(false)" class="header__mobile-link">Shop</a>
-      <a routerLink="/collections" (click)="menuOpen.set(false)" class="header__mobile-link">Collections</a>
       <a routerLink="/about"       (click)="menuOpen.set(false)" class="header__mobile-link">About</a>
-      <a routerLink="/journal"     (click)="menuOpen.set(false)" class="header__mobile-link">Journal</a>
+      <a routerLink="/ai-advisor"  (click)="menuOpen.set(false)" class="header__mobile-link header__mobile-link--ai">
+        ✦ AI Advisor
+      </a>
       <a routerLink="/account"     (click)="menuOpen.set(false)" class="header__mobile-link">Account</a>
     </nav>
   }

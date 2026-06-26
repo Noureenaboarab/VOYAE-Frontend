@@ -1,5 +1,5 @@
 // ============================================================
-// VOYÆ — Search Modal Component
+// VOYÆ — Search Modal (backend-aligned)
 // ============================================================
 import {
   Component,
@@ -36,7 +36,6 @@ export class SearchModalComponent implements OnDestroy {
   isOpen = this.searchService.isOpen;
   query  = this.searchService.query;
 
-  // Suggestions filtered by current query
   suggestions = computed<string[]>(() => {
     const q = this.query().toLowerCase().trim();
     const base = [
@@ -50,37 +49,30 @@ export class SearchModalComponent implements OnDestroy {
     return base.filter(s => s.toLowerCase().includes(q));
   });
 
-  popularTags = ['Carry-On', 'Obsidian', 'Sets', 'Desert Sand', 'New'];
+  popularTags = ['Carry-On', 'Check-In', 'Large', 'New arrivals'];
 
-  // Products matching the query
   results = computed<Product[]>(() => {
     const q = this.query().toLowerCase().trim();
     if (!q) return [];
-    // Access the private signal via bracket notation to avoid exposing it publicly
     const all = (this.productService as any)['_products']() as Product[];
     return all.filter(p =>
-      p.name.toLowerCase().includes(q)         ||
-      p.type.toLowerCase().includes(q)         ||
-      p.size.toLowerCase().includes(q)         ||
-      p.color.toLowerCase().includes(q)        ||
+      p.name.toLowerCase().includes(q)           ||
+      p.type.toLowerCase().includes(q)           ||
       (p.description ?? '').toLowerCase().includes(q)
     );
   });
 
   constructor() {
-    // Auto-focus input when modal opens
     effect(() => {
       if (this.isOpen()) {
         setTimeout(() => this.searchInputRef?.nativeElement.focus(), 50);
       }
     });
 
-    // Lock body scroll while modal is open
     effect(() => {
       document.body.style.overflow = this.isOpen() ? 'hidden' : '';
     });
 
-    // Restore scroll on destroy
     this.destroyRef.onDestroy(() => {
       document.body.style.overflow = '';
     });
@@ -119,6 +111,6 @@ export class SearchModalComponent implements OnDestroy {
 
   navigateToProduct(product: Product): void {
     this.close();
-    this.router.navigate(['/product', product.slug]);
+    this.router.navigate(['/product', product.id]);
   }
 }
