@@ -1,0 +1,13 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    networks:
+      - packify-network
+
+networks:
+  packify-network:
+    external: true
