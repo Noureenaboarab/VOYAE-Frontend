@@ -5,7 +5,7 @@ import { AiSearchRequest, AiSearchResponse } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class AiSearchService {
-    private readonly apiUrl = 'http://localhost:8080/api/ai/search';
+    private readonly apiUrl = '/api/ai/search';
 
     constructor(private http: HttpClient) {}
 
