@@ -21,6 +21,7 @@
           [value]="query()"
           (input)="onQueryChange($any($event.target).value)"
           (keydown.escape)="close()"
+          (keydown.enter)="submitSearch()"
           placeholder="Search for luggage, accessories…"
           autocomplete="off"
           aria-label="Search products"
@@ -76,12 +77,22 @@
 
         <!-- Right: results -->
         <section class="search-modal__results" aria-live="polite">
-          @if (results().length > 0) {
-            <p class="search-results__count">
-              {{ results().length }} result{{ results().length !== 1 ? 's' : '' }} for "{{ query() }}"
-            </p>
+          @if (previewResults().length > 0) {
+            <div class="search-results__header">
+              <p class="search-results__count">
+                {{ results().length }} result{{ results().length !== 1 ? 's' : '' }} for "{{ query() }}"
+              </p>
+              @if (results().length > 0) {
+                <button class="search-results__see-all" (click)="seeAllResults()">
+                  See all results
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                    <path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              }
+            </div>
             <div class="search-results__grid">
-              @for (product of results(); track product.id) {
+              @for (product of previewResults(); track product.id) {
                 <article
                   class="search-result-card"
                   (click)="navigateToProduct(product)"
@@ -103,6 +114,11 @@
                 </article>
               }
             </div>
+            @if (extraCount() > 0) {
+              <button class="search-results__overflow-btn" (click)="seeAllResults()">
+                + {{ extraCount() }} more result{{ extraCount() !== 1 ? 's' : '' }} — view all
+              </button>
+            }
           } @else if (query().length > 0) {
             <div class="search-results__empty">
               <p class="search-results__empty-title">No results for "{{ query() }}"</p>

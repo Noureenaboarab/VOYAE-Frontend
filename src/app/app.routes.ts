@@ -17,6 +17,14 @@ export const routes: Routes = [
     title: 'The Collection – VOYAE',
   },
   {
+    path: 'search',
+    loadComponent: () =>
+        import('./features/search-results/search-results.component').then(
+            m => m.SearchResultsComponent
+        ),
+    title: 'Search – VOYAE',
+  },
+  {
     path: 'collections',
     redirectTo: 'shop',
     pathMatch: 'full',
