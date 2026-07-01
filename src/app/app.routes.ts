@@ -2,6 +2,8 @@
 // VOYÆ — App Routes
 // ============================================================
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 export const routes: Routes = [
   {
@@ -46,9 +48,24 @@ export const routes: Routes = [
     title: 'AI Advisor – VOYAE',
   },
   {
+    path: 'login',
+    loadComponent: () =>
+        import('./features/auth/login.component').then(m => m.LoginComponent),
+    canActivate: [guestGuard],
+    title: 'Sign In – VOYAE',
+  },
+  {
+    path: 'signup',
+    loadComponent: () =>
+        import('./features/auth/signup.component').then(m => m.SignupComponent),
+    canActivate: [guestGuard],
+    title: 'Create Account – VOYAE',
+  },
+  {
     path: 'checkout',
     loadComponent: () =>
         import('./features/checkout/checkout.component').then(m => m.CheckoutComponent),
+    canActivate: [authGuard],
     title: 'Checkout – VOYAE',
   },
   {
@@ -57,12 +74,14 @@ export const routes: Routes = [
         import('./features/checkout/order-confirmation/order-confirmation.component').then(
             m => m.OrderConfirmationComponent
         ),
+    canActivate: [authGuard],
     title: 'Order Confirmed – VOYAE',
   },
   {
     path: 'account',
     loadComponent: () =>
         import('./features/account/account.component').then(m => m.AccountComponent),
+    canActivate: [authGuard],
     title: 'My Account – VOYAE',
   },
   {
