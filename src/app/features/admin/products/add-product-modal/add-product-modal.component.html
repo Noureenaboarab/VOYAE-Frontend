@@ -1,0 +1,239 @@
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+  <div class="product-modal" role="dialog" aria-modal="true" [attr.aria-labelledby]="'product-modal-title'">
+
+    <header class="product-modal__header">
+      <h2 class="product-modal__title" id="product-modal-title">
+        {{ isEditMode ? 'Edit product' : 'Add product' }}
+      </h2>
+      <button
+        type="button"
+        class="product-modal__close"
+        aria-label="Close"
+        (click)="close.emit()"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <line x1="3" y1="3" x2="13" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="13" y1="3" x2="3" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <form class="product-modal__form" #form="ngForm" (ngSubmit)="onSubmit(form)" novalidate>
+      <div class="product-modal__body">
+
+        <!-- Name -->
+        <div class="field field--full">
+          <label class="field__label" for="name">Product name</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            class="field__input"
+            [class.field__input--error]="submitted && name.invalid"
+            [(ngModel)]="formData.name"
+            #name="ngModel"
+            required
+            placeholder="The Carry-On"
+          />
+          @if (submitted && name.invalid) {
+            <p class="field__error">Enter a product name.</p>
+          }
+        </div>
+
+        <!-- Type -->
+        <div class="field">
+          <label class="field__label" for="type">Type</label>
+          <select
+            id="type"
+            name="type"
+            class="field__input field__input--select"
+            [class.field__input--error]="submitted && type.invalid"
+            [(ngModel)]="formData.type"
+            (ngModelChange)="onTypeChange()"
+            #type="ngModel"
+            required
+          >
+            <option value="" disabled>Select type</option>
+            @for (category of categories; track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+          </select>
+          @if (submitted && type.invalid) {
+            <p class="field__error">Select a type.</p>
+          }
+        </div>
+
+        <!-- Color -->
+        <div class="field">
+          <label class="field__label" for="color">Color</label>
+          <input
+            id="color"
+            name="color"
+            type="text"
+            class="field__input"
+            [class.field__input--error]="submitted && color.invalid"
+            [(ngModel)]="formData.color"
+            (ngModelChange)="onColorChange()"
+            #color="ngModel"
+            required
+            placeholder="Desert Sand"
+          />
+          @if (submitted && color.invalid) {
+            <p class="field__error">Enter a color.</p>
+          }
+        </div>
+
+        <!-- SKU -->
+        <div class="field">
+          <label class="field__label" for="sku">
+            SKU
+            <span class="field__hint">Auto-generated from type + color</span>
+          </label>
+          <input
+            id="sku"
+            name="sku"
+            type="text"
+            class="field__input"
+            [class.field__input--error]="submitted && sku.invalid"
+            [(ngModel)]="formData.sku"
+            #sku="ngModel"
+            required
+            placeholder="VY-CO-DS"
+          />
+          @if (submitted && sku.invalid) {
+            <p class="field__error">SKU is required.</p>
+          }
+        </div>
+
+        <!-- Price -->
+        <div class="field">
+          <label class="field__label" for="price">Price (USD)</label>
+          <input
+            id="price"
+            name="price"
+            type="number"
+            class="field__input"
+            [class.field__input--error]="submitted && price.invalid"
+            [(ngModel)]="formData.price"
+            #price="ngModel"
+            required
+            min="0"
+            step="1"
+            placeholder="295"
+          />
+          @if (submitted && price.invalid) {
+            <p class="field__error">Enter a valid price.</p>
+          }
+        </div>
+
+        <!-- Discount -->
+        <div class="field">
+          <label class="field__label" for="discount">
+            Discount (%)
+            <span class="field__hint">0 for no discount</span>
+          </label>
+          <input
+            id="discount"
+            name="discount"
+            type="number"
+            class="field__input"
+            [(ngModel)]="formData.discount"
+            min="0"
+            max="100"
+            step="1"
+          />
+        </div>
+
+        <!-- Stock -->
+        <div class="field">
+          <label class="field__label" for="stock">
+            Stock
+            <span class="field__hint">Leave empty for out of stock</span>
+          </label>
+          <input
+            id="stock"
+            name="stock"
+            type="number"
+            class="field__input"
+            [(ngModel)]="formData.stock"
+            min="0"
+            step="1"
+            placeholder="—"
+          />
+        </div>
+
+        <!-- Status -->
+        <div class="field">
+          <label class="field__label" for="status">Status</label>
+          <select
+            id="status"
+            name="status"
+            class="field__input field__input--select"
+            [(ngModel)]="formData.status"
+          >
+            <option value="active">Active</option>
+            <option value="low-stock">Low stock</option>
+            <option value="out-of-stock">Out of stock</option>
+          </select>
+        </div>
+
+        <!-- Badge -->
+        <div class="field">
+          <label class="field__label" for="badge">Badge</label>
+          <select
+            id="badge"
+            name="badge"
+            class="field__input field__input--select"
+            [(ngModel)]="formData.badge"
+          >
+            <option [ngValue]="null">None</option>
+            <option value="bestseller">Bestseller</option>
+            <option value="new">New</option>
+          </select>
+        </div>
+
+        <!-- Image URL -->
+        <div class="field field--full">
+          <label class="field__label" for="imageUrl">Image URL</label>
+          <input
+            id="imageUrl"
+            name="imageUrl"
+            type="text"
+            class="field__input"
+            [(ngModel)]="formData.imageUrl"
+            placeholder="/assets/images/carry-on-desert-sand.jpg"
+          />
+          @if (formData.imageUrl) {
+            <div class="field__preview">
+              <img [src]="formData.imageUrl" alt="" />
+            </div>
+          }
+        </div>
+
+        <!-- Description -->
+        <div class="field field--full">
+          <label class="field__label" for="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            class="field__input field__input--textarea"
+            [(ngModel)]="formData.description"
+            rows="3"
+            placeholder="Add a short product description…"
+          ></textarea>
+        </div>
+
+      </div>
+
+      <footer class="product-modal__footer">
+        <button type="button" class="btn btn--ghost" (click)="close.emit()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn--primary">
+          {{ isEditMode ? 'Save changes' : 'Add product' }}
+        </button>
+      </footer>
+    </form>
+
+  </div>
+</div>
