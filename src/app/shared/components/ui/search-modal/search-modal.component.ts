@@ -18,6 +18,9 @@ import { ProductService } from '../../../../core/services/product.service';
 import { SearchService } from '../../../../core/services/search.service';
 import { Product } from '../../../../core/models';
 
+// Max inline results shown inside the modal before nudging to full results page
+const MODAL_MAX_RESULTS = 6;
+
 @Component({
   selector: 'voy-search-modal',
   standalone: true,
@@ -61,6 +64,10 @@ export class SearchModalComponent implements OnDestroy {
       (p.description ?? '').toLowerCase().includes(q)
     );
   });
+
+  /** Slice shown inside the modal; remaining count nudges to full page. */
+  previewResults = computed(() => this.results().slice(0, MODAL_MAX_RESULTS));
+  extraCount     = computed(() => Math.max(0, this.results().length - MODAL_MAX_RESULTS));
 
   constructor() {
     effect(() => {
@@ -112,5 +119,14 @@ export class SearchModalComponent implements OnDestroy {
   navigateToProduct(product: Product): void {
     this.close();
     this.router.navigate(['/product', product.id]);
+  }
+
+  /** Called on Enter key in the input or clicking "See all results". */
+  submitSearch(): void {
+    this.searchService.submitSearch();
+  }
+
+  seeAllResults(): void {
+    this.searchService.submitSearch();
   }
 }

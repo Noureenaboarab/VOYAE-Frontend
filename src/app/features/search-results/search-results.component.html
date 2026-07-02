@@ -1,0 +1,97 @@
+<main class="search-results page-wrapper">
+  <div class="container">
+
+    <!-- Page header -->
+    <div class="search-results__header">
+      <div class="search-results__meta">
+        <p class="eyebrow">Search</p>
+        @if (queryTerm()) {
+          <h1 class="display-md">
+            Results for <em class="search-results__term">"{{ queryTerm() }}"</em>
+          </h1>
+        } @else {
+          <h1 class="display-md">Search</h1>
+        }
+      </div>
+
+      <div class="search-results__controls">
+        <!-- Re-open search modal -->
+        <button class="search-results__refine-btn" (click)="openSearch()" aria-label="Refine search">
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M12.5 12.5L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Refine search
+        </button>
+
+        @if (!loading() && results().length > 0) {
+          <span class="text-muted" style="font-size: var(--text-sm)">
+            {{ results().length }} product{{ results().length !== 1 ? 's' : '' }}
+          </span>
+          <div class="search-results__sort">
+            <label for="sort" class="sr-only">Sort by</label>
+            <select
+              id="sort"
+              class="form-select"
+              [value]="sortBy()"
+              (change)="onSortChange($any($event.target).value)">
+              @for (opt of sortOptions; track opt.value) {
+                <option [value]="opt.value">Sort: {{ opt.label }}</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="search-results__state">
+        <p class="text-muted">Loading products…</p>
+      </div>
+
+    <!-- API error -->
+    } @else if (error()) {
+      <div class="search-results__state">
+        <p class="text-muted">{{ error() }}</p>
+      </div>
+
+    <!-- No query entered -->
+    } @else if (!queryTerm()) {
+      <div class="search-results__state search-results__state--empty">
+        <p class="display-sm">What are you looking for?</p>
+        <p class="text-muted">Start by typing a search term above.</p>
+        <button class="btn btn--primary" (click)="openSearch()">Open search</button>
+      </div>
+
+    <!-- Zero results -->
+    } @else if (results().length === 0) {
+      <div class="search-results__state search-results__state--empty">
+        <p class="display-sm">No results for "{{ queryTerm() }}"</p>
+        <p class="text-muted">Try a different keyword, or browse the full collection.</p>
+        <div class="search-results__state-actions">
+          <button class="btn btn--ghost" (click)="openSearch()">Try another search</button>
+          <a routerLink="/shop" class="btn btn--primary">Browse all products</a>
+        </div>
+      </div>
+
+    <!-- Results grid -->
+    } @else {
+      <div class="grid grid--3">
+        @for (product of results(); track product.id) {
+          <voy-product-card
+            [product]="product"
+            [wishlisted]="isWishlisted(product.id)"
+            (wishlistToggle)="onWishlistToggle($event)" />
+        }
+      </div>
+
+      <!-- Browse all nudge -->
+      <div class="search-results__footer">
+        <p class="text-muted">Not finding what you need?</p>
+        <a routerLink="/shop" class="btn btn--ghost">Browse the full collection</a>
+      </div>
+    }
+
+  </div>
+</main>

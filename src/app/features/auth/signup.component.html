@@ -1,0 +1,198 @@
+<main class="auth page-wrapper">
+  <div class="container container--narrow">
+    <div class="auth__card">
+
+      <div class="auth__header">
+        <a routerLink="/" class="auth__logo">VOY&#198;</a>
+        <h1 class="auth__title">Create your account</h1>
+        <p class="auth__subtitle">Join VOYAE for a seamless shopping experience</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <div class="auth__body">
+
+          <div class="form-group">
+            <label class="form-label" for="name">Full name</label>
+            <input
+              id="name"
+              type="text"
+              class="form-control"
+              [class.is-error]="f.name.touched && f.name.invalid"
+              formControlName="name"
+              placeholder="Amr Shams"
+              autocomplete="name" />
+            @if (f.name.touched && f.name.hasError('required')) {
+              <span class="form-error">Name is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              class="form-control"
+              [class.is-error]="f.email.touched && f.email.invalid"
+              formControlName="email"
+              placeholder="amrshams@gmail.com"
+              autocomplete="email" />
+            @if (f.email.touched && f.email.hasError('required')) {
+              <span class="form-error">Email is required</span>
+            }
+            @if (f.email.touched && f.email.hasError('pattern')) {
+              <span class="form-error">Enter a valid email address</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              class="form-control"
+              [class.is-error]="f.password.touched && f.password.invalid"
+              formControlName="password"
+              placeholder="Create a password"
+              autocomplete="new-password" />
+            @if (f.password.touched && f.password.hasError('required')) {
+              <span class="form-error">Password is required</span>
+            }
+            @if (f.password.touched && f.password.hasError('minLength')) {
+              <span class="form-error">At least 8 characters</span>
+            }
+            @if (f.password.touched && !f.password.hasError('minLength') && f.password.hasError('lowercase')) {
+              <span class="form-error">Missing a lowercase letter</span>
+            }
+            @if (f.password.touched && !f.password.hasError('minLength') && f.password.hasError('uppercase')) {
+              <span class="form-error">Missing an uppercase letter</span>
+            }
+            @if (f.password.touched && !f.password.hasError('minLength') && f.password.hasError('number')) {
+              <span class="form-error">Missing a number</span>
+            }
+            @if (f.password.touched && !f.password.hasError('minLength') && f.password.hasError('special')) {
+              <span class="form-error">Missing a special character (&#64;$!%*?&amp;)</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirmPassword">Confirm password</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              class="form-control"
+              [class.is-error]="f.confirmPassword.touched && (f.confirmPassword.invalid || form.hasError('passwordsMismatch'))"
+              formControlName="confirmPassword"
+              placeholder="Confirm your password"
+              autocomplete="new-password" />
+            @if (f.confirmPassword.touched && f.confirmPassword.hasError('required')) {
+              <span class="form-error">Please confirm your password</span>
+            }
+            @if (f.confirmPassword.touched && form.hasError('passwordsMismatch')) {
+              <span class="form-error">Passwords do not match</span>
+            }
+          </div>
+
+          <fieldset class="auth__optional">
+            <legend class="auth__optional-title">Additional details (optional)</legend>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="birthday">Birthday</label>
+                <input
+                  id="birthday"
+                  type="date"
+                  class="form-control"
+                  formControlName="birthday" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="job">Job</label>
+                <input
+                  id="job"
+                  type="text"
+                  class="form-control"
+                  formControlName="job"
+                  placeholder="Software Engineer" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="gender">Gender</label>
+              <select id="gender" class="form-select" formControlName="gender">
+                <option value="">Prefer not to say</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="street">Street address</label>
+              <input
+                id="street"
+                type="text"
+                class="form-control"
+                formControlName="street"
+                placeholder="123 Main St" />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="city">City</label>
+                <input
+                  id="city"
+                  type="text"
+                  class="form-control"
+                  formControlName="city"
+                  placeholder="Cairo" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="postalCode">Postal code</label>
+                <input
+                  id="postalCode"
+                  type="text"
+                  class="form-control"
+                  formControlName="postalCode"
+                  placeholder="12345" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="country">Country</label>
+              <input
+                id="country"
+                type="text"
+                class="form-control"
+                formControlName="country"
+                placeholder="Egypt" />
+            </div>
+          </fieldset>
+
+          @if (error()) {
+            <div class="auth__error">{{ error() }}</div>
+          }
+
+          <div class="auth__actions">
+            <button
+              type="submit"
+              class="btn btn--primary btn--full btn--lg"
+              [disabled]="loading()">
+              @if (loading()) {
+                Creating account…
+              } @else {
+                Create account
+              }
+            </button>
+          </div>
+
+        </div>
+      </form>
+
+      <div class="auth__footer">
+        <span>Already have an account?</span>
+        <a routerLink="/login" class="auth__link">Sign in</a>
+      </div>
+
+    </div>
+  </div>
+</main>

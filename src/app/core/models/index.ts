@@ -79,6 +79,32 @@ export interface ProductFilter {
   sortBy:   'featured' | 'price-asc' | 'price-desc' | 'newest';
 }
 
+export interface LoginRequest {
+  email:    string;
+  password: string;
+}
+
+export interface AuthResponse {
+  token:   string;
+  email?:  string;
+  name?:   string;
+}
+
+export interface RegisterRequest {
+  name:            string;
+  email:           string;
+  password:        string;
+  confirmPassword: string;
+  birthday?:       string;
+  job?:            string;
+  gender?:         string;
+  street?:         string;
+  city?:           string;
+  country?:        string;
+  postalCode?:     string;
+  categoryIds?:    number[];
+}
+
 export interface AiSearchRequest {
   query: string;
 }
