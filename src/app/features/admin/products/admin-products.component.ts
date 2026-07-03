@@ -14,6 +14,7 @@ import { AddProductModalComponent } from './add-product-modal/add-product-modal.
   styleUrl: './admin-products.component.scss',
 })
 export class AdminProductsComponent {
+  constructor() { console.log('✅ AdminProductsComponent mounted'); }
   private service = inject(AdminProductService);
 
   // ── Service-derived counts (all products, unfiltered) ───
