@@ -1,0 +1,33 @@
+:host { display: block; }
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  min-height: 100vh;
+
+  &__sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--color-ink);
+
+    // Thin scrollbar on overflow (Firefox)
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+
+    // WebKit scrollbar
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+    }
+  }
+
+  &__content {
+    background-color: var(--color-parchment);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+}
