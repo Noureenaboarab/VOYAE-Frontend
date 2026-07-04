@@ -27,41 +27,21 @@
 
   <!-- ── Tab bar ───────────────────────────────────────────── -->
   <div class="admin-tabs" role="tablist" aria-label="Filter products by status">
-    <button
-      class="admin-tabs__tab"
-      [class.is-active]="activeTab() === 'all'"
-      (click)="setTab('all')"
-      role="tab"
-      [attr.aria-selected]="activeTab() === 'all'">
-      All Products
-      <span class="admin-tabs__count">{{ totalCount() }}</span>
+    <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'all'"
+      (click)="setTab('all')" role="tab" [attr.aria-selected]="activeTab() === 'all'">
+      All Products <span class="admin-tabs__count">{{ totalCount() }}</span>
     </button>
-    <button
-      class="admin-tabs__tab"
-      [class.is-active]="activeTab() === 'active'"
-      (click)="setTab('active')"
-      role="tab"
-      [attr.aria-selected]="activeTab() === 'active'">
-      Active
-      <span class="admin-tabs__count">{{ activeCount() }}</span>
+    <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'active'"
+      (click)="setTab('active')" role="tab" [attr.aria-selected]="activeTab() === 'active'">
+      Active <span class="admin-tabs__count">{{ activeCount() }}</span>
     </button>
-    <button
-      class="admin-tabs__tab"
-      [class.is-active]="activeTab() === 'low-stock'"
-      (click)="setTab('low-stock')"
-      role="tab"
-      [attr.aria-selected]="activeTab() === 'low-stock'">
-      Low Stock
-      <span class="admin-tabs__count">{{ lowStockCount() }}</span>
+    <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'low-stock'"
+      (click)="setTab('low-stock')" role="tab" [attr.aria-selected]="activeTab() === 'low-stock'">
+      Low Stock <span class="admin-tabs__count">{{ lowStockCount() }}</span>
     </button>
-    <button
-      class="admin-tabs__tab"
-      [class.is-active]="activeTab() === 'out-of-stock'"
-      (click)="setTab('out-of-stock')"
-      role="tab"
-      [attr.aria-selected]="activeTab() === 'out-of-stock'">
-      Out of Stock
-      <span class="admin-tabs__count">{{ outOfStockCount() }}</span>
+    <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'out-of-stock'"
+      (click)="setTab('out-of-stock')" role="tab" [attr.aria-selected]="activeTab() === 'out-of-stock'">
+      Out of Stock <span class="admin-tabs__count">{{ outOfStockCount() }}</span>
     </button>
   </div>
 
@@ -70,25 +50,17 @@
 
     <!-- Toolbar -->
     <div class="products-toolbar">
-      <!-- Search -->
       <div class="search-input-wrap">
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
           <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.4"/>
           <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
         </svg>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Search products…"
+        <input type="text" class="search-input" placeholder="Search products…"
           aria-label="Search products"
           [value]="searchQuery()"
           (input)="onSearch($any($event.target).value)" />
       </div>
-
-      <!-- Category dropdown -->
-      <select
-        class="toolbar-select"
-        aria-label="Filter by category"
+      <select class="toolbar-select" aria-label="Filter by category"
         [value]="categoryFilter()"
         (change)="onCategoryChange($any($event.target).value)">
         <option value="">All categories</option>
@@ -96,11 +68,7 @@
           <option [value]="cat">{{ cat }}</option>
         }
       </select>
-
-      <!-- Status dropdown -->
-      <select
-        class="toolbar-select"
-        aria-label="Filter by status"
+      <select class="toolbar-select" aria-label="Filter by status"
         [value]="statusFilter()"
         (change)="onStatusChange($any($event.target).value)">
         <option value="">Status</option>
@@ -108,10 +76,7 @@
         <option value="low-stock">Low Stock</option>
         <option value="out-of-stock">Out of Stock</option>
       </select>
-
       <div class="toolbar-spacer"></div>
-
-      <!-- Add Product -->
       <button class="btn btn--primary products-add-btn" (click)="openAddModal()">
         + Add Product
       </button>
@@ -139,13 +104,10 @@
           <tbody>
             @for (product of paginatedProducts(); track product.id) {
               <tr>
-                <!-- Product cell: thumbnail + name + color -->
                 <td>
                   <div class="product-cell">
                     @if (product.imageUrl) {
-                      <img
-                        class="product-cell__thumb"
-                        [src]="product.imageUrl"
+                      <img class="product-cell__thumb" [src]="product.imageUrl"
                         [alt]="product.name + ' ' + product.color" />
                     } @else {
                       <div class="product-cell__thumb product-cell__thumb--placeholder"></div>
@@ -156,30 +118,17 @@
                     </div>
                   </div>
                 </td>
-
-                <!-- SKU -->
                 <td class="td--sku">{{ product.sku }}</td>
-
-                <!-- Price -->
                 <td class="td--price">${{ product.price }}</td>
-
-                <!-- Stock -->
                 <td class="td--stock">
-                  @if (product.stock !== null) {
-                    {{ product.stock }}
-                  } @else {
-                    <span class="text-muted">—</span>
-                  }
+                  @if (product.stock !== null) { {{ product.stock }} }
+                  @else { <span class="text-muted">—</span> }
                 </td>
-
-                <!-- Status badge -->
                 <td>
                   <span class="status-badge status-badge--{{ product.status }}">
                     {{ getStatusLabel(product.status) }}
                   </span>
                 </td>
-
-                <!-- Badge label -->
                 <td>
                   @if (product.badge) {
                     <span class="badge-label badge-label--{{ product.badge }}">
@@ -189,21 +138,17 @@
                     <span class="text-muted">—</span>
                   }
                 </td>
-
-                <!-- Actions -->
                 <td>
                   <div class="table-actions">
-                    <button
-                      class="table-action-btn"
-                      (click)="openEditModal(product)"
+                    <button class="table-action-btn" (click)="openEditModal(product)"
                       [attr.aria-label]="'Edit ' + product.name + ' ' + product.color"
                       title="Edit product">
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                        <path d="M9.5 2L12 4.5 5.5 11H3V8.5L9.5 2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                        <path d="M9.5 2L12 4.5 5.5 11H3V8.5L9.5 2Z" stroke="currentColor"
+                          stroke-width="1.4" stroke-linejoin="round"/>
                       </svg>
                     </button>
-                    <button
-                      class="table-action-btn table-action-btn--delete"
+                    <button class="table-action-btn table-action-btn--delete"
                       (click)="deleteProduct(product.id)"
                       [attr.aria-label]="'Delete ' + product.name + ' ' + product.color"
                       title="Delete product">
@@ -229,30 +174,18 @@
           Showing {{ showingCount() }} of {{ filteredCount() }} products
         </p>
         <div class="products-pagination__pages" role="navigation" aria-label="Pagination">
-          <button
-            class="page-btn"
-            [disabled]="currentPage() === 1"
-            (click)="goToPage(currentPage() - 1)"
-            aria-label="Previous page">
-            ‹
-          </button>
+          <button class="page-btn" [disabled]="currentPage() === 1"
+            (click)="goToPage(currentPage() - 1)" aria-label="Previous page">‹</button>
           @for (page of pages(); track page) {
-            <button
-              class="page-btn"
-              [class.is-active]="currentPage() === page"
+            <button class="page-btn" [class.is-active]="currentPage() === page"
               (click)="goToPage(page)"
               [attr.aria-label]="'Page ' + page"
               [attr.aria-current]="currentPage() === page ? 'page' : null">
               {{ page }}
             </button>
           }
-          <button
-            class="page-btn"
-            [disabled]="currentPage() === totalPages()"
-            (click)="goToPage(currentPage() + 1)"
-            aria-label="Next page">
-            ›
-          </button>
+          <button class="page-btn" [disabled]="currentPage() === totalPages()"
+            (click)="goToPage(currentPage() + 1)" aria-label="Next page">›</button>
         </div>
       </div>
     }

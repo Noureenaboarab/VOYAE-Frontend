@@ -1,5 +1,5 @@
 // ============================================================
-// VOYÆ — App Routes (updated: admin routes added)
+// VOYÆ — App Routes
 // ============================================================
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
@@ -92,7 +92,7 @@ export const routes: Routes = [
   },
 
   // ── Admin ────────────────────────────────────────────────
-  // Add canActivate: [adminGuard] here once you build the guard
+  // Add canActivate: [adminGuard] here once auth guard is built
   {
     path: 'admin',
     loadComponent: () =>
@@ -101,11 +101,7 @@ export const routes: Routes = [
       ),
     title: 'Admin – VOYAE',
     children: [
-      {
-        path: '',
-        redirectTo: 'products',
-        pathMatch: 'full',
-      },
+      { path: '', redirectTo: 'products', pathMatch: 'full' },
       {
         path: 'products',
         loadComponent: () =>
@@ -114,11 +110,12 @@ export const routes: Routes = [
           ),
         title: 'Products – VOYAE Admin',
       },
-      // Placeholder routes — swap loadComponent as pages are built
       {
         path: 'orders',
         loadComponent: () =>
-          import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
+          import('./features/admin/orders/admin-orders.component').then(
+            m => m.AdminOrdersComponent
+          ),
         title: 'Orders – VOYAE Admin',
       },
       {
