@@ -1,0 +1,65 @@
+<main class="offers-page page-wrapper">
+  <div class="container">
+    <div class="offers-page__header">
+      <p class="eyebrow">Bundle Offers</p>
+      <h1 class="display-md">Save on Sets</h1>
+    </div>
+
+    @if (loading()) {
+      <div class="offers-page__grid">
+        @for (_ of [1,2,3]; track $index) {
+          <div class="offers-page__card offers-page__card--skeleton"></div>
+        }
+      </div>
+    } @else if (error()) {
+      <div class="offers-page__empty">
+        <p class="text-muted">{{ error() }}</p>
+      </div>
+    } @else if (offers().length === 0) {
+      <div class="offers-page__empty">
+        <p class="display-sm">No active offers right now.</p>
+        <p class="text-muted">Check back later for new bundle deals.</p>
+        <a routerLink="/shop" class="btn btn--primary" style="margin-top: var(--space-6)">Shop the collection</a>
+      </div>
+    } @else {
+      <div class="offers-page__grid">
+        @for (offer of offers(); track offer.id) {
+          <div class="offers-page__card">
+            <div class="offers-page__card-top">
+              <div class="offers-page__badge">-{{ percentSaved(offer) }}%</div>
+              @if (offer.products.length > 0) {
+                <div class="offers-page__product-list">
+                  @for (product of offer.products; track product.id) {
+                    <div class="offers-page__product-item">
+                      <span class="offers-page__product-name">{{ product.name }}</span>
+                      <span class="offers-page__product-price">${{ product.basePrice - product.discount }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+            <div class="offers-page__card-body">
+              <h2 class="offers-page__card-title">{{ offer.name }}</h2>
+              <p class="offers-page__card-desc">{{ offer.description }}</p>
+              <div class="offers-page__pricing">
+                <span class="offers-page__original">${{ offer.originalTotal }}</span>
+                <span class="offers-page__bundle">${{ offer.bundlePrice }}</span>
+              </div>
+            </div>
+            <div class="offers-page__card-footer">
+              @if (isClaimed(offer.id)) {
+                <span class="offers-page__claimed">Claimed ✓</span>
+              } @else {
+                <button class="btn btn--primary btn--full"
+                        [disabled]="claimingId() === offer.id"
+                        (click)="claim(offer.id)">
+                  {{ claimingId() === offer.id ? 'Adding to Bag…' : 'Claim Offer' }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</main>
