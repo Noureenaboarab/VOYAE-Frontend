@@ -1,0 +1,33 @@
+<div class="offer-strip-wrap" [class.is-visible]="visible()" #sentinel>
+  @if (offers().length > 0) {
+    <div class="offer-strip">
+      @for (offer of offers(); track offer.id) {
+        <div class="offer-strip__card">
+          <div class="offer-strip__tag">-{{ (offer.savings / offer.originalTotal * 100) | number:'1.0-0' }}%</div>
+          <div class="offer-strip__body">
+            <h3 class="offer-strip__title">{{ offer.name }}</h3>
+            <p class="offer-strip__desc">{{ offer.description }}</p>
+            <div class="offer-strip__pricing">
+              <span class="offer-strip__original">${{ offer.originalTotal }}</span>
+              <span class="offer-strip__bundle">${{ offer.bundlePrice }}</span>
+            </div>
+            @if (isClaimed(offer.id)) {
+              <span class="offer-strip__claimed">Claimed ✓</span>
+            } @else {
+              <button class="offer-strip__claim-btn"
+                      [disabled]="claimingId() === offer.id"
+                      (click)="claim(offer.id)">
+                {{ claimingId() === offer.id ? 'Adding…' : 'Claim' }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (loading()) {
+    <div class="offer-strip offer-strip--skeleton">
+      <div class="offer-strip__card offer-strip__card--skeleton"></div>
+      <div class="offer-strip__card offer-strip__card--skeleton"></div>
+    </div>
+  }
+</div>
