@@ -1,10 +1,12 @@
 // ============================================================
 // VOYÆ — Account / Profile Page
 // ============================================================
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 import { Order, UserProfile } from '../../core/models';
+import { AccountResolvedData } from '../../core/resolvers/account.resolver';
 
 type AccountSection = 'personal' | 'orders' | 'wishlist' | 'addresses' | 'payment' | 'preferences';
 
@@ -16,6 +18,9 @@ type AccountSection = 'personal' | 'orders' | 'wishlist' | 'addresses' | 'paymen
   styleUrl: './account.component.scss',
 })
 export class AccountComponent {
+  private authService = inject(AuthService);
+  private route = inject(ActivatedRoute);
+
   activeSection = signal<AccountSection>('personal');
   editingProfile = signal(false);
 
@@ -28,46 +33,42 @@ export class AccountComponent {
     { id: 'preferences', label: 'Preferences',      icon: 'settings' },
   ];
 
-  // Computed signal so the template never needs an arrow function in interpolation
   activeSectionLabel = computed(() => {
     const id = this.activeSection();
     return this.navItems.find(n => n.id === id)?.label ?? '';
   });
 
-  profile: UserProfile = {
-    firstName:   'Sarah',
-    lastName:    'Mitchell',
-    email:       'sarah.mitchell@email.com',
-    phone:       '+1 (555) 214-8832',
-    dateOfBirth: 'March 14, 1991',
-    country:     'United States',
-    memberSince: '2022',
-    avatarUrl:   '/assets/images/avatar-sarah.jpg',
-  };
+  profile!: UserProfile;
+  recentOrders!: Order[];
 
-  recentOrders: Order[] = [
-    {
-      id: '#VY-20481',
-      date: 'Nov 12, 2024',
-      items: [],
-      status: 'delivered',
-      total: 295,
-    },
-    {
-      id: '#VY-19903',
-      date: 'Sep 13, 2024',
-      items: [],
-      status: 'delivered',
-      total: 395,
-    },
-    {
-      id: '#VY-18574',
-      date: 'Jun 28, 2024',
-      items: [],
-      status: 'delivered',
-      total: 445,
-    },
-  ];
+  constructor() {
+    const resolved: AccountResolvedData | null = this.route.snapshot.data['account'];
+
+    if (resolved?.profile) {
+      this.profile = resolved.profile;
+    } else {
+      this.profile = {
+        firstName:   'Sarah',
+        lastName:    'Mitchell',
+        email:       'sarah.mitchell@email.com',
+        phone:       '+1 (555) 214-8832',
+        dateOfBirth: 'March 14, 1991',
+        country:     'United States',
+        memberSince: '2022',
+        avatarUrl:   '/assets/images/avatar-sarah.jpg',
+      };
+    }
+
+    this.recentOrders = [
+      { id: '#VY-20481', date: 'Nov 12, 2024', items: [], status: 'delivered', total: 295 },
+      { id: '#VY-19903', date: 'Sep 13, 2024', items: [], status: 'delivered', total: 395 },
+      { id: '#VY-18574', date: 'Jun 28, 2024', items: [], status: 'delivered', total: 445 },
+    ];
+  }
+
+  signOut(): void {
+    this.authService.logout();
+  }
 
   setSection(id: AccountSection): void {
     this.activeSection.set(id);

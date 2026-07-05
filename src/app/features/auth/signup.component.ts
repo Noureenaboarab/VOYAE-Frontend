@@ -83,7 +83,7 @@ export class SignupComponent {
     }).subscribe({
       next: () => {
         this.loading.set(false);
-        this.router.navigateByUrl('/account');
+        this.router.navigateByUrl('');
       },
       error: (err) => {
         this.loading.set(false);
