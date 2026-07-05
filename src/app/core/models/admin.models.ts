@@ -2,18 +2,19 @@
 // VOYÆ — Admin Data Models
 // ============================================================
 
+// ── Product types ────────────────────────────────────────────
 export type AdminProductStatus = 'active' | 'low-stock' | 'out-of-stock';
 export type AdminProductBadge  = 'bestseller' | 'new' | null;
 
 export interface AdminProduct {
   id:          string;
-  name:        string;         // "The Carry-On"
-  color:       string;         // "Desert Sand"
-  type:        string;         // category — same as name for VOYÆ
-  sku:         string;         // "VY-CO-DS"
-  price:       number;         // 295
-  discount:    number;         // 0 if none
-  stock:       number | null;  // null = out of stock → rendered as —
+  name:        string;
+  color:       string;
+  type:        string;
+  sku:         string;
+  price:       number;
+  discount:    number;
+  stock:       number | null;
   status:      AdminProductStatus;
   badge:       AdminProductBadge;
   imageUrl:    string;
@@ -35,4 +36,31 @@ export interface AddProductFormData {
   badge:       AdminProductBadge;
   imageUrl:    string;
   description: string;
+}
+
+// ── Order types ──────────────────────────────────────────────
+export type AdminOrderStatus = 'processing' | 'shipped' | 'delivered' | 'returned';
+export type AdminOrderTab    = 'all' | AdminOrderStatus;
+
+export interface AdminOrderItem {
+  productId: string;
+  name:      string;
+  color:     string;
+  quantity:  number;
+  price:     number;
+}
+
+export interface AdminOrderCustomer {
+  name:     string;
+  email:    string;
+  initials: string;
+}
+
+export interface AdminOrder {
+  id:       string;
+  date:     string;
+  customer: AdminOrderCustomer;
+  items:    AdminOrderItem[];
+  total:    number;
+  status:   AdminOrderStatus;
 }
