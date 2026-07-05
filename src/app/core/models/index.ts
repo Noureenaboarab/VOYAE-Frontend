@@ -49,14 +49,21 @@ export interface Order {
 }
 
 export interface UserProfile {
-  firstName:   string;
-  lastName:    string;
-  email:       string;
-  phone:       string;
-  dateOfBirth: string;
-  country:     string;
-  memberSince: string;
-  avatarUrl?:  string;
+  id?:          number;
+  name?:        string;
+  firstName:    string;
+  lastName:     string;
+  email:        string;
+  phone?:       string;
+  dateOfBirth?: string;
+  job?:         string;
+  gender?:      string;
+  street?:      string;
+  city?:        string;
+  country:      string;
+  postalCode?:  string;
+  memberSince:  string;
+  avatarUrl?:   string;
 }
 
 export interface ShippingOption {
@@ -77,6 +84,25 @@ export interface ProductFilter {
   priceMin: number;
   priceMax: number;
   sortBy:   'featured' | 'price-asc' | 'price-desc' | 'newest';
+}
+
+export interface OfferProduct {
+  id:          number;
+  name:        string;
+  basePrice:   number;
+  discount:    number;
+  imageUrl?:   string;
+}
+
+export interface Offer {
+  id:            number;
+  name:          string;
+  description:   string;
+  bundlePrice:   number;
+  originalTotal: number;
+  savings:       number;
+  products:      OfferProduct[];
+  createdAt:     string;
 }
 
 export interface LoginRequest {
