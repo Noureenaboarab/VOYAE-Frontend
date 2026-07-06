@@ -9,8 +9,10 @@
 // server-computed subtotal for display only.
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { CartResponse, CartItemResponse, Product } from '../models';
+import { AuthService } from './auth.service';
 
 const VALID_COUPONS: Record<string, number> = {
   'VOYAE10':   10,
@@ -20,7 +22,9 @@ const VALID_COUPONS: Record<string, number> = {
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  private http = inject(HttpClient);
+  private http   = inject(HttpClient);
+  private auth   = inject(AuthService);
+  private router = inject(Router);
 
   /** Raw server cart. Null until the first load resolves. */
   readonly cart = signal<CartResponse | null>(null);
@@ -55,53 +59,83 @@ export class CartService {
   });
 
   constructor() {
-    this.loadCart();
+    if (this.auth.token()) {
+      this.loadCart();
+    }
   }
 
-  /** Fetch the current user's cart. Called on init; call again to refresh. */
+  /** Fetch the current user's cart. Safe to call for a guest — it just
+   * no-ops rather than firing a request that would 401. Call again after
+   * login to populate the cart. */
   loadCart(): void {
+    if (!this.auth.token()) return;
     this.http.get<CartResponse>('/api/cart').subscribe({
       next: (cart) => { this.cart.set(cart); this.error.set(null); },
-      error: (err) => this.error.set(this.messageFrom(err)),
+      error: (err) => this.handleError(err),
     });
+  }
+
+  /** Guards mutating actions behind login. Redirects a guest to /login
+   * (preserving the current URL to return to) instead of firing a request
+   * that the backend would reject with 401. Returns false if blocked. */
+  private requireAuth(): boolean {
+    if (this.auth.token()) return true;
+    this.error.set('Please log in to add items to your bag.');
+    this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+    return false;
+  }
+
+  private handleError(err: HttpErrorResponse): void {
+    if (err.status === 401) {
+      this.error.set('Your session has expired. Please log in again.');
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+    this.error.set(this.messageFrom(err));
   }
 
   /** Accepts the full Product so existing call sites (product-detail,
    * offers, offer-strip, product-card) don't need to extract the id themselves. */
   addItem(product: Product, quantity = 1): void {
+    if (!this.requireAuth()) return;
     const productId = Number(product.id);
     this.http.post<CartResponse>('/api/cart/items', { productId, quantity }).subscribe({
       next: (cart) => { this.cart.set(cart); this.error.set(null); },
-      error: (err) => this.error.set(this.messageFrom(err)),
+      error: (err) => this.handleError(err),
     });
   }
 
   removeItem(itemId: number): void {
+    if (!this.requireAuth()) return;
     this.http.delete<CartResponse>(`/api/cart/items/${itemId}`).subscribe({
       next: (cart) => { this.cart.set(cart); this.error.set(null); },
-      error: (err) => this.error.set(this.messageFrom(err)),
+      error: (err) => this.handleError(err),
     });
   }
 
   /** Sets an item to an exact quantity. Removes the item if quantity <= 0. */
   updateQuantity(itemId: number, quantity: number): void {
+    if (!this.requireAuth()) return;
     if (quantity <= 0) {
       this.removeItem(itemId);
       return;
     }
     this.http.patch<CartResponse>(`/api/cart/items/${itemId}`, { quantity }).subscribe({
       next: (cart) => { this.cart.set(cart); this.error.set(null); },
-      error: (err) => this.error.set(this.messageFrom(err)),
+      error: (err) => this.handleError(err),
     });
   }
 
   /** Returns an Observable so callers can subscribe and chain follow-up
    * logic (e.g. calling setDiscount for a bundle-savings label) on success. */
   applyOffer(offerId: number): Observable<CartResponse> {
+    if (!this.requireAuth()) {
+      return throwError(() => new Error('Not authenticated'));
+    }
     return this.http.post<CartResponse>(`/api/cart/offers/${offerId}`, {}).pipe(
         tap((cart) => { this.cart.set(cart); this.error.set(null); }),
         catchError((err: HttpErrorResponse) => {
-          this.error.set(this.messageFrom(err));
+          this.handleError(err);
           return throwError(() => err);
         }),
     );
