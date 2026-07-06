@@ -5,23 +5,26 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../core/services/cart.service';
+import { OfferStripComponent } from '../../shared/components/ui/offer-strip/offer-strip.component';
 import { CartItem } from '../../core/models';
 
 @Component({
   selector: 'voy-cart',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, OfferStripComponent],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.scss',
 })
 export class CartComponent {
   private cartService = inject(CartService);
 
-  items    = this.cartService.items;
-  subtotal = this.cartService.subtotal;
-  shipping = this.cartService.shipping;
-  total    = this.cartService.total;
-  itemCount = this.cartService.itemCount;
+  items      = this.cartService.items;
+  subtotal   = this.cartService.subtotal;
+  shipping   = this.cartService.shipping;
+  discount   = this.cartService.discount;
+  couponCode = this.cartService.couponCode;
+  total      = this.cartService.total;
+  itemCount  = this.cartService.itemCount;
 
   remove(item: CartItem): void {
     this.cartService.removeItem(item.product.id);
