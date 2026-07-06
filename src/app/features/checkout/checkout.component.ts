@@ -1,7 +1,7 @@
 // ============================================================
 // VOYÆ — Checkout Page
 // ============================================================
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -26,7 +26,7 @@ export class CheckoutComponent {
   shipping     = this.cartSvc.shipping;
   total        = this.cartSvc.total;
   couponCode   = this.cartSvc.couponCode;
-  cartDiscount = computed(() => this.cartSvc.cart().discount ?? 0);
+  cartDiscount = this.cartSvc.discount;
 
   // UI state
   couponInput     = signal('');

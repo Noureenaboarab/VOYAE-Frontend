@@ -1,12 +1,12 @@
 // ============================================================
-// VOYÆ — Cart / Bag Page
+// VOYÆ — Cart / Bag Page (backend-integrated)
 // ============================================================
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../core/services/cart.service';
 import { OfferStripComponent } from '../../shared/components/ui/offer-strip/offer-strip.component';
-import { CartItem } from '../../core/models';
+import { CartItemResponse } from '../../core/models';
 
 @Component({
   selector: 'voy-cart',
@@ -25,13 +25,14 @@ export class CartComponent {
   couponCode = this.cartService.couponCode;
   total      = this.cartService.total;
   itemCount  = this.cartService.itemCount;
+  error      = this.cartService.error;
 
-  remove(item: CartItem): void {
-    this.cartService.removeItem(item.product.id);
+  remove(item: CartItemResponse): void {
+    this.cartService.removeItem(item.id);
   }
 
-  updateQty(item: CartItem, qty: number): void {
-    this.cartService.updateQuantity(item.product.id, qty);
+  updateQty(item: CartItemResponse, qty: number): void {
+    this.cartService.updateQuantity(item.id, qty);
   }
 
   formatPrice(n: number): string {
