@@ -224,6 +224,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: var(--space-4);
+    flex-wrap: wrap;
   }
 
   &__label {
@@ -251,6 +252,11 @@
     background-color: rgba(255, 255, 255, 0.8);
     border: var(--border-thin);
     border-radius: var(--radius-full);
+    white-space: nowrap;
+  }
+
+  &__action {
+    flex-shrink: 0;
     white-space: nowrap;
   }
 

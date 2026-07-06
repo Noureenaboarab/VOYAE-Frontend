@@ -81,6 +81,10 @@ export class AccountService {
     );
   }
 
+  setDefaultAddress(id: number): Observable<void> {
+    return this.http.patch<void>(`/api/address/${id}`, {});
+  }
+
   getOrder(id: string | number): Observable<Order> {
     return this.http.get<BackendOrder>(`/api/orders/${id}`).pipe(
       map(mapOrder),

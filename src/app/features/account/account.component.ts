@@ -31,6 +31,7 @@ export class AccountComponent {
   addresses = signal<Address[]>([]);
   addressesLoading = signal(false);
   addressesError = signal<string | null>(null);
+  defaultAddressUpdatingId = signal<number | null>(null);
 
   private ordersLoaded = false;
   private addressesLoaded = false;
@@ -135,6 +136,25 @@ export class AccountComponent {
     return [address.street, address.city, address.postalCode, address.country]
       .filter(Boolean)
       .join(', ');
+  }
+
+  setDefaultAddress(address: Address): void {
+    if (address.isDefault || this.defaultAddressUpdatingId() !== null) return;
+
+    this.defaultAddressUpdatingId.set(address.id);
+    this.addressesError.set(null);
+
+    this.accountService.setDefaultAddress(address.id).subscribe({
+      next: () => {
+        this.defaultAddressUpdatingId.set(null);
+        this.loadAddresses(true);
+      },
+      error: err => {
+        console.error('Failed to update default address', err);
+        this.addressesError.set('Could not update the default address. Please try again.');
+        this.defaultAddressUpdatingId.set(null);
+      },
+    });
   }
 
   private loadOrders(force = false): void {

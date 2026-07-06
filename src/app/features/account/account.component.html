@@ -253,6 +253,14 @@
 
                         @if (address.isDefault) {
                           <span class="address-card__badge">Default</span>
+                        } @else {
+                          <button
+                            type="button"
+                            class="btn btn--ghost btn--sm address-card__action"
+                            [disabled]="defaultAddressUpdatingId() === address.id"
+                            (click)="setDefaultAddress(address)">
+                            {{ defaultAddressUpdatingId() === address.id ? 'Updating...' : 'Set as default' }}
+                          </button>
                         }
                       </div>
 
