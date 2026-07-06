@@ -3,10 +3,10 @@
 // ============================================================
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService } from '../../core/services/account.service';
-import { Order, UserProfile } from '../../core/models';
+import { Address, Order, UserProfile } from '../../core/models';
 import { AccountResolvedData } from '../../core/resolvers/account.resolver';
 
 type AccountSection = 'personal' | 'orders' | 'wishlist' | 'addresses' | 'payment' | 'preferences';
@@ -14,7 +14,7 @@ type AccountSection = 'personal' | 'orders' | 'wishlist' | 'addresses' | 'paymen
 @Component({
   selector: 'voy-account',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink],
   templateUrl: './account.component.html',
   styleUrl: './account.component.scss',
 })
@@ -28,8 +28,13 @@ export class AccountComponent {
   orders = signal<Order[]>([]);
   ordersLoading = signal(false);
   ordersError = signal<string | null>(null);
+  addresses = signal<Address[]>([]);
+  addressesLoading = signal(false);
+  addressesError = signal<string | null>(null);
+  defaultAddressUpdatingId = signal<number | null>(null);
 
   private ordersLoaded = false;
+  private addressesLoaded = false;
 
   navItems: { id: AccountSection; label: string; icon: string }[] = [
     { id: 'personal',    label: 'Personal Info',    icon: 'user' },
@@ -46,6 +51,7 @@ export class AccountComponent {
   });
 
   recentOrders = computed(() => this.orders().slice(0, 3));
+  defaultAddress = computed(() => this.addresses().find(address => address.isDefault) ?? null);
 
   profile!: UserProfile;
 
@@ -56,18 +62,20 @@ export class AccountComponent {
       this.profile = resolved.profile;
     } else {
       this.profile = {
-        firstName:   'Sarah',
-        lastName:    'Mitchell',
-        email:       'sarah.mitchell@email.com',
-        phone:       '+1 (555) 214-8832',
-        dateOfBirth: 'March 14, 1991',
-        country:     'United States',
-        memberSince: '2022',
-        avatarUrl:   '/assets/images/avatar-sarah.jpg',
-      };
+          id: 2,
+          firstName: 'Sarah',
+          lastName: 'Mitchell',
+          name: 'Sarah Mitchell',
+          email: 'sarah@example.com',
+          gender: 'FEMALE',
+          job: 'Designer',
+          dateOfBirth: '1995-06-20',
+          memberSince: '2026-06-26T16:23:14',
+        };
     }
 
     this.loadOrders();
+    this.loadAddresses();
   }
 
   signOut(): void {
@@ -78,6 +86,9 @@ export class AccountComponent {
     this.activeSection.set(id);
     if (id === 'orders') {
       this.loadOrders();
+    }
+    if (id === 'addresses') {
+      this.loadAddresses();
     }
   }
 
@@ -121,6 +132,31 @@ export class AccountComponent {
     return labels[status] ?? status;
   }
 
+  formatAddress(address: Address): string {
+    return [address.street, address.city, address.postalCode, address.country]
+      .filter(Boolean)
+      .join(', ');
+  }
+
+  setDefaultAddress(address: Address): void {
+    if (address.isDefault || this.defaultAddressUpdatingId() !== null) return;
+
+    this.defaultAddressUpdatingId.set(address.id);
+    this.addressesError.set(null);
+
+    this.accountService.setDefaultAddress(address.id).subscribe({
+      next: () => {
+        this.defaultAddressUpdatingId.set(null);
+        this.loadAddresses(true);
+      },
+      error: err => {
+        console.error('Failed to update default address', err);
+        this.addressesError.set('Could not update the default address. Please try again.');
+        this.defaultAddressUpdatingId.set(null);
+      },
+    });
+  }
+
   private loadOrders(force = false): void {
     if (this.ordersLoaded && !force) return;
 
@@ -137,6 +173,26 @@ export class AccountComponent {
         console.error('Failed to load account orders', err);
         this.ordersError.set('Could not load your orders. Please try again.');
         this.ordersLoading.set(false);
+      },
+    });
+  }
+
+  private loadAddresses(force = false): void {
+    if (this.addressesLoaded && !force) return;
+
+    this.addressesLoading.set(true);
+    this.addressesError.set(null);
+
+    this.accountService.getAddresses().subscribe({
+      next: addresses => {
+        this.addresses.set(addresses);
+        this.addressesLoaded = true;
+        this.addressesLoading.set(false);
+      },
+      error: err => {
+        console.error('Failed to load account addresses', err);
+        this.addressesError.set('Could not load your addresses. Please try again.');
+        this.addressesLoading.set(false);
       },
     });
   }

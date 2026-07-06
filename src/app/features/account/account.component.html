@@ -7,16 +7,11 @@
 
         <!-- Avatar + name -->
         <div class="account__profile-head">
-          <div class="account__avatar-wrap">
-            <img
-              [src]="profile.avatarUrl"
-              [alt]="profile.firstName + ' ' + profile.lastName"
-              class="account__avatar"
-              onerror="this.src=''" />
-            <span class="account__avatar-initials" [class.is-visible]="!profile.avatarUrl">
-              {{ profile.firstName[0] }}{{ profile.lastName[0] }}
-            </span>
-          </div>
+        <div class="account__avatar-wrap">
+          <span class="account__avatar-initials is-visible">
+            {{ profile.firstName[0] }}{{ profile.lastName[0] }}
+          </span>
+        </div>  
           <div>
             <p class="account__profile-name">{{ profile.firstName }} {{ profile.lastName }}</p>
             <p class="account__profile-since">Member since {{ profile.memberSince }}</p>
@@ -107,39 +102,73 @@
               </div>
 
               <div class="profile-fields">
+
                 <div class="form-row">
                   <div class="form-group">
                     <label class="form-label">First Name</label>
-                    <input type="text" class="form-control" [value]="profile.firstName" [readonly]="!editingProfile()" />
+                    <input
+                      type="text"
+                      class="form-control"
+                      [value]="profile.firstName"
+                      [readonly]="!editingProfile()" />
                   </div>
+
                   <div class="form-group">
                     <label class="form-label">Last Name</label>
-                    <input type="text" class="form-control" [value]="profile.lastName" [readonly]="!editingProfile()" />
+                    <input
+                      type="text"
+                      class="form-control"
+                      [value]="profile.lastName"
+                      [readonly]="!editingProfile()" />
                   </div>
                 </div>
+
                 <div class="form-row">
                   <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" class="form-control" [value]="profile.email" [readonly]="!editingProfile()" />
+                    <label class="form-label">Email</label>
+                    <input
+                      type="email"
+                      class="form-control"
+                      [value]="profile.email"
+                      [readonly]="!editingProfile()" />
                   </div>
+
                   <div class="form-group">
-                    <label class="form-label">Phone Number</label>
-                    <input type="tel" class="form-control" [value]="profile.phone" [readonly]="!editingProfile()" />
+                    <label class="form-label">Gender</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      [value]="profile.gender"
+                      [readonly]="!editingProfile()" />
                   </div>
                 </div>
+
                 <div class="form-row">
                   <div class="form-group">
                     <label class="form-label">Date of Birth</label>
-                    <input type="text" class="form-control" [value]="profile.dateOfBirth" [readonly]="!editingProfile()" />
+                    <input
+                      type="date"
+                      class="form-control"
+                      [value]="profile.dateOfBirth"
+                      [readonly]="!editingProfile()" />
                   </div>
+
                   <div class="form-group">
-                    <label class="form-label">Country</label>
-                    <input type="text" class="form-control" [value]="profile.country" [readonly]="!editingProfile()" />
+                    <label class="form-label">Job</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      [value]="profile.job"
+                      [readonly]="!editingProfile()" />
                   </div>
                 </div>
+
                 @if (editingProfile()) {
-                  <button class="btn btn--primary" style="margin-top: var(--space-4)">Save changes</button>
+                  <button class="btn btn--primary" style="margin-top: var(--space-4)">
+                    Save Changes
+                  </button>
                 }
+
               </div>
 
               <!-- Password -->
@@ -191,6 +220,72 @@
                   }
                 </div>
               </div>
+            </div>
+          }
+
+          <!-- ADDRESSES -->
+          @case ('addresses') {
+            <div class="account-content-block">
+              <div class="account-content-block__header">
+                <div>
+                  <h1 class="account-content-block__title">Addresses</h1>
+                  <p class="account-content-block__subtitle">
+                    Saved shipping addresses for this account.
+                  </p>
+                </div>
+              </div>
+
+              @if (addressesLoading()) {
+                <p class="orders-state">Loading addresses...</p>
+              } @else if (addressesError()) {
+                <p class="orders-state orders-state--error">{{ addressesError() }}</p>
+              } @else if (addresses().length === 0) {
+                <p class="orders-state">No saved addresses yet.</p>
+              } @else {
+                <div class="addresses-list">
+                  @for (address of addresses(); track address.id) {
+                    <article class="address-card">
+                      <div class="address-card__header">
+                        <div>
+                          <p class="address-card__label">{{ address.label }}</p>
+                          <p class="address-card__summary">{{ formatAddress(address) }}</p>
+                        </div>
+
+                        @if (address.isDefault) {
+                          <span class="address-card__badge">Default</span>
+                        } @else {
+                          <button
+                            type="button"
+                            class="btn btn--ghost btn--sm address-card__action"
+                            [disabled]="defaultAddressUpdatingId() === address.id"
+                            (click)="setDefaultAddress(address)">
+                            {{ defaultAddressUpdatingId() === address.id ? 'Updating...' : 'Set as default' }}
+                          </button>
+                        }
+                      </div>
+
+                      <div class="address-card__body">
+                        <div>
+                          <span>Street</span>
+                          <strong>{{ address.street }}</strong>
+                        </div>
+                        <div>
+                          <span>City</span>
+                          <strong>{{ address.city }}</strong>
+                        </div>
+                        <div>
+                          <span>Postal code</span>
+                          <strong>{{ address.postalCode }}</strong>
+                        </div>
+                        <div>
+                          <span>Country</span>
+                          <strong>{{ address.country }}</strong>
+                        </div>
+                      </div>
+                    </article>
+                  }
+                </div>
+              }
             </div>
           }
 
