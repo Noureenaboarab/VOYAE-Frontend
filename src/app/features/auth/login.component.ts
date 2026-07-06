@@ -42,10 +42,13 @@ export class LoginComponent {
             next: () => {
                 this.loading.set(false);
 
-                // Admins always land on the admin dashboard, regardless of
+                console.log('token:', this.authService.token());
+                console.log('role:', this.authService.role());
+                console.log('isAdmin:', this.authService.isAdmin());
+                // Admins always land on the admin products page, regardless of
                 // whatever page they were on before hitting /login.
                 if (this.authService.isAdmin()) {
-                    this.router.navigateByUrl('/admin');
+                    this.router.navigateByUrl('/admin/products');
                     return;
                 }
 

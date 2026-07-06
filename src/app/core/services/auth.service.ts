@@ -27,14 +27,20 @@ export class AuthService {
     try {
       const payloadSegment = jwt.split('.')[1];
       const normalized = payloadSegment.replace(/-/g, '+').replace(/_/g, '/');
-      const payload = JSON.parse(atob(normalized));
+      // base64url has no padding, but atob() requires length to be a
+      // multiple of 4 — pad it back out before decoding.
+      const padded = normalized.padEnd(
+          normalized.length + (4 - (normalized.length % 4)) % 4,
+          '='
+      );
+      const payload = JSON.parse(atob(padded));
       return payload.role ?? null;
     } catch {
       return null;
     }
   });
 
-  readonly isAdmin = computed(() => this.role() === 'ADMIN');
+  readonly isAdmin = computed(() => this.role() === 'ROLE_ADMIN');
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>('/api/auth/login', credentials).pipe(
