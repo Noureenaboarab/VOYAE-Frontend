@@ -232,11 +232,6 @@
                   <p class="account-content-block__subtitle">
                     Saved shipping addresses for this account.
                   </p>
-                  @if (defaultAddress(); as currentDefaultAddress) {
-                    <p class="account-content-block__subtitle account-content-block__subtitle--strong">
-                      Default address: {{ currentDefaultAddress.label }}
-                    </p>
-                  }
                 </div>
 
                 <button
@@ -344,15 +339,73 @@
                         </div>
 
                         @if (address.isDefault) {
-                          <span class="address-card__badge">Default</span>
+                          <div class="address-card__actions">
+                            <span class="address-card__badge">Default</span>
+                            @if (deleteConfirmAddressId() === address.id) {
+                              <div class="address-card__confirm-row">
+                                <span class="address-card__confirm-text">Remove this address?</span>
+                                <button
+                                  type="button"
+                                  class="btn btn--ghost btn--sm address-card__danger"
+                                  [disabled]="deletingAddressId() === address.id"
+                                  (click)="removeAddress(address)">
+                                  {{ deletingAddressId() === address.id ? 'Removing...' : 'Yes, remove' }}
+                                </button>
+                                <button
+                                  type="button"
+                                  class="btn btn--ghost btn--sm"
+                                  [disabled]="deletingAddressId() === address.id"
+                                  (click)="cancelDeleteAddress()">
+                                  Cancel
+                                </button>
+                              </div>
+                            } @else {
+                              <button
+                                type="button"
+                                class="btn btn--ghost btn--sm address-card__danger"
+                                [disabled]="deletingAddressId() === address.id"
+                                (click)="removeAddress(address)">
+                                {{ deletingAddressId() === address.id ? 'Removing...' : 'Remove' }}
+                              </button>
+                            }
+                          </div>
                         } @else {
-                          <button
-                            type="button"
-                            class="btn btn--ghost btn--sm address-card__action"
-                            [disabled]="defaultAddressUpdatingId() === address.id"
-                            (click)="setDefaultAddress(address)">
-                            {{ defaultAddressUpdatingId() === address.id ? 'Updating...' : 'Set as default' }}
-                          </button>
+                          <div class="address-card__actions">
+                            <button
+                              type="button"
+                              class="btn btn--ghost btn--sm address-card__action"
+                              [disabled]="defaultAddressUpdatingId() === address.id"
+                              (click)="setDefaultAddress(address)">
+                              {{ defaultAddressUpdatingId() === address.id ? 'Updating...' : 'Set as default' }}
+                            </button>
+                            @if (deleteConfirmAddressId() === address.id) {
+                              <div class="address-card__confirm-row">
+                                <span class="address-card__confirm-text">Remove this address?</span>
+                                <button
+                                  type="button"
+                                  class="btn btn--ghost btn--sm address-card__danger"
+                                  [disabled]="deletingAddressId() === address.id"
+                                  (click)="removeAddress(address)">
+                                  {{ deletingAddressId() === address.id ? 'Removing...' : 'Yes, remove' }}
+                                </button>
+                                <button
+                                  type="button"
+                                  class="btn btn--ghost btn--sm"
+                                  [disabled]="deletingAddressId() === address.id"
+                                  (click)="cancelDeleteAddress()">
+                                  Cancel
+                                </button>
+                              </div>
+                            } @else {
+                              <button
+                                type="button"
+                                class="btn btn--ghost btn--sm address-card__danger"
+                                [disabled]="deletingAddressId() === address.id"
+                                (click)="removeAddress(address)">
+                                {{ deletingAddressId() === address.id ? 'Removing...' : 'Remove' }}
+                              </button>
+                            }
+                          </div>
                         }
                       </div>
 

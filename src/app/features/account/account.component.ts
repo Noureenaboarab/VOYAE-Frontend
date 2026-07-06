@@ -33,6 +33,7 @@ export class AccountComponent {
   addressesLoading = signal(false);
   addressesError = signal<string | null>(null);
   defaultAddressUpdatingId = signal<number | null>(null);
+  deletingAddressId = signal<number | null>(null);
   addressFormVisible = signal(false);
   creatingAddress = signal(false);
   createAddressError = signal<string | null>(null);
@@ -202,6 +203,28 @@ export class AccountComponent {
         console.error('Failed to update default address', err);
         this.addressesError.set('Could not update the default address. Please try again.');
         this.defaultAddressUpdatingId.set(null);
+      },
+    });
+  }
+
+  removeAddress(address: Address): void {
+    if (this.deletingAddressId() !== null) return;
+
+    const confirmed = window.confirm(`Remove ${address.label}?`);
+    if (!confirmed) return;
+
+    this.deletingAddressId.set(address.id);
+    this.addressesError.set(null);
+
+    this.accountService.deleteAddress(address.id).subscribe({
+      next: () => {
+        this.deletingAddressId.set(null);
+        this.loadAddresses(true);
+      },
+      error: err => {
+        console.error('Failed to delete address', err);
+        this.addressesError.set('Could not remove this address. Please try again.');
+        this.deletingAddressId.set(null);
       },
     });
   }

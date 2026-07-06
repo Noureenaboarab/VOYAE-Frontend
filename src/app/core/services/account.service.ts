@@ -89,6 +89,10 @@ export class AccountService {
     return this.http.patch<void>(`/api/address/${id}`, {});
   }
 
+  deleteAddress(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/address/${id}`);
+  }
+
   getOrder(id: string | number): Observable<Order> {
     return this.http.get<BackendOrder>(`/api/orders/${id}`).pipe(
       map(mapOrder),
