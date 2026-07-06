@@ -6,11 +6,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../core/services/product.service';
 import { ProductCardComponent } from '../../shared/components/ui/product-card/product-card.component';
+import { OfferStripComponent } from '../../shared/components/ui/offer-strip/offer-strip.component';
 
 @Component({
   selector: 'voy-shop',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProductCardComponent],
+  imports: [CommonModule, FormsModule, ProductCardComponent, OfferStripComponent],
   templateUrl: './shop.component.html',
   styleUrl: './shop.component.scss',
 })
