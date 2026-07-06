@@ -1,0 +1,121 @@
+<main class="order-detail page-wrapper">
+  <div class="container">
+    <a class="order-detail__back" routerLink="/account">
+      &larr; Back to account
+    </a>
+
+    @if (loading()) {
+      <section class="order-detail__state">
+        <p>Loading order...</p>
+      </section>
+    } @else if (error()) {
+      <section class="order-detail__state order-detail__state--error">
+        <p>{{ error() }}</p>
+      </section>
+    } @else {
+      @if (order(); as currentOrder) {
+
+        <section class="order-detail__hero">
+          <div class="order-detail__hero-summary">
+
+            <div class="order-detail__status-group">
+              <span class="order-detail__status-label">Order status</span>
+              <span class="order-detail__status order-detail__status--{{ currentOrder.status }}">
+                {{ getStatusLabel(currentOrder.status) }}
+              </span>
+            </div>
+
+            @if (currentOrder.paymentStatus) {
+              <div class="order-detail__status-group">
+                <span class="order-detail__status-label">Payment status</span>
+                <span class="order-detail__payment">
+                  {{ getPaymentStatusLabel(currentOrder.paymentStatus) }}
+                </span>
+              </div>
+            }
+
+            <div class="order-detail__hero-total">
+              <span>Order total</span>
+              <strong>{{ formatMoney(currentOrder.total) }}</strong>
+            </div>
+
+          </div>
+        </section>
+
+        <section class="order-detail__overview" aria-label="Order overview">
+          <div class="order-detail__overview-item">
+            <span>Order date</span>
+            <strong>{{ formatDate(currentOrder.date) }}</strong>
+          </div>
+
+          <div class="order-detail__overview-item">
+            <span>Items purchased</span>
+            <strong>{{ getItemCount(currentOrder) }}</strong>
+          </div>
+
+          <div class="order-detail__overview-item">
+            <span>Order ID</span>
+            <strong>#{{ currentOrder.id }}</strong>
+          </div>
+        </section>
+
+        <section class="order-detail__items" aria-label="Order items">
+          <div class="order-detail__section-head">
+            <h2>Order Items</h2>
+          </div>
+
+          <article
+            *ngFor="let item of currentOrder.items; trackBy: trackOrderItem"
+            class="order-detail-item">
+
+            <div class="order-detail-item__image-wrap">
+              <img
+                *ngIf="item.imageUrl"
+                class="order-detail-item__image"
+                [src]="item.imageUrl"
+                [alt]="item.name" />
+            </div>
+
+            <div class="order-detail-item__info">
+              <p class="order-detail-item__type">
+                {{ item.type || 'Product' }}
+              </p>
+
+              <h2 class="order-detail-item__name">
+                {{ item.name }}
+              </h2>
+            </div>
+
+            <div class="order-detail-item__numbers">
+
+              <div>
+                <span>Qty</span>
+                <strong>{{ item.quantity }}</strong>
+              </div>
+
+              <div>
+                <span>Price</span>
+                <strong>{{ formatMoney(item.price) }}</strong>
+              </div>
+
+              <div>
+                <span>Line total</span>
+                <strong>{{ formatMoney(item.price * item.quantity) }}</strong>
+              </div>
+
+            </div>
+
+          </article>
+
+          <p
+            *ngIf="currentOrder.items.length === 0"
+            class="order-detail__empty">
+            No items were found for this order.
+          </p>
+
+        </section>
+
+      }
+    }
+  </div>
+</main>
