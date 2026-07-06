@@ -1,8 +1,9 @@
 // ============================================================
 // VOYÆ — Admin Sidebar
 // ============================================================
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'voy-admin-sidebar',
@@ -11,4 +12,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './admin-sidebar.component.html',
   styleUrl: './admin-sidebar.component.scss',
 })
-export class AdminSidebarComponent {}
+export class AdminSidebarComponent {
+  private authService = inject(AuthService);
+
+  signOut(): void {
+    this.authService.logout();
+  }
+}
