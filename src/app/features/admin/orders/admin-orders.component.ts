@@ -43,9 +43,9 @@ export class AdminOrdersComponent {
 
     if (q) {
       items = items.filter(o =>
-        o.id.toLowerCase().includes(q) ||
-        o.customer.name.toLowerCase().includes(q) ||
-        o.customer.email.toLowerCase().includes(q)
+          o.id.toLowerCase().includes(q) ||
+          o.customer.name.toLowerCase().includes(q) ||
+          o.customer.email.toLowerCase().includes(q)
       );
     }
 
@@ -55,11 +55,11 @@ export class AdminOrdersComponent {
   readonly filteredCount = computed(() => this.filteredOrders().length);
 
   readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filteredCount() / this.PAGE_SIZE))
+      Math.max(1, Math.ceil(this.filteredCount() / this.PAGE_SIZE))
   );
 
   readonly pages = computed(() =>
-    Array.from({ length: this.totalPages() }, (_, i) => i + 1)
+      Array.from({ length: this.totalPages() }, (_, i) => i + 1)
   );
 
   readonly paginatedOrders = computed(() => {

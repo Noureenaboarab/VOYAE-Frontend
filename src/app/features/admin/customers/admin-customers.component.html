@@ -1,0 +1,155 @@
+@if (!selectedCustomer()) {
+    <div class="page">
+        <p class="eyebrow">Store</p>
+        <h1>Customers</h1>
+
+        <div class="tabs">
+            <button class="tab" [class.tab-active]="activeTab() === 'all'" (click)="setTab('all')">
+                All <span class="tab-count">{{ totalCount() }}</span>
+            </button>
+            <button class="tab" [class.tab-active]="activeTab() === 'active'" (click)="setTab('active')">
+                Active <span class="tab-count">{{ activeCount() }}</span>
+            </button>
+            <button class="tab" [class.tab-active]="activeTab() === 'inactive'" (click)="setTab('inactive')">
+                Inactive <span class="tab-count">{{ inactiveCount() }}</span>
+            </button>
+        </div>
+
+        <div class="search-field">
+            <input
+                    type="text"
+                    placeholder="Search customers..."
+                    [value]="searchQuery()"
+                    (input)="onSearch($any($event.target).value)"
+            />
+        </div>
+
+        <div class="table-card">
+            <div class="table-head">
+                <span>Customer</span>
+                <span>Email</span>
+                <span>Joined</span>
+                <span>Spent</span>
+                <span>Status</span>
+                <span></span>
+            </div>
+
+            @if (paginatedCustomers().length === 0) {
+                <div class="state-row">No customers match your search.</div>
+            }
+
+            @for (c of paginatedCustomers(); track c.email) {
+                <div class="table-row" (click)="selectCustomer(c.email)">
+                    <div class="customer-cell">
+                        <div class="avatar">{{ c.initials }}</div>
+                        <span class="name">{{ c.name }}</span>
+                    </div>
+                    <span class="muted">{{ c.email }}</span>
+                    <span class="muted">{{ formatDate(c.joinedDate) }}</span>
+                    <span class="amount">{{ formatCurrency(c.totalSpent) }}</span>
+                    <span>
+            <span class="pill" [class.pill-active]="c.status === 'active'">
+              {{ getStatusLabel(c.status) }}
+            </span>
+          </span>
+                    <span class="chevron">›</span>
+                </div>
+            }
+        </div>
+
+        @if (totalPages() > 1) {
+            <div class="pagination">
+                <button
+                        class="page-nav"
+                        (click)="goToPage(currentPage() - 1)"
+                        [disabled]="currentPage() === 1"
+                        aria-label="Previous page"
+                >‹</button>
+
+                @for (p of pages(); track p) {
+                    <button
+                            class="page-btn"
+                            [class.page-btn-active]="p === currentPage()"
+                            (click)="goToPage(p)"
+                    >
+                        {{ p }}
+                    </button>
+                }
+
+                <button
+                        class="page-nav"
+                        (click)="goToPage(currentPage() + 1)"
+                        [disabled]="currentPage() === totalPages()"
+                        aria-label="Next page"
+                >›</button>
+            </div>
+        }
+    </div>
+}
+
+@if (selectedCustomer(); as c) {
+    <div class="page">
+        <button class="back-link" (click)="backToList()">‹ Back to customers</button>
+
+        <div class="profile-card">
+            <div class="profile-main">
+                <div class="avatar avatar-lg">{{ c.initials }}</div>
+                <div>
+                    <h2>{{ c.name }}</h2>
+                    <span class="pill" [class.pill-active]="c.status === 'active'">
+            {{ getStatusLabel(c.status) }}
+          </span>
+                </div>
+            </div>
+
+            <div class="profile-details">
+                <div>{{ c.email }}</div>
+                <div>Joined {{ formatDate(c.joinedDate) }}</div>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">Total orders</div>
+                <div class="stat-value">{{ c.totalOrders }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total spent</div>
+                <div class="stat-value">{{ formatCurrency(c.totalSpent) }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg. order</div>
+                <div class="stat-value">{{ formatCurrency(selectedAvgOrderValue()) }}</div>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-card-title">Order history</div>
+            <div class="order-head">
+                <span>Order</span>
+                <span>Date</span>
+                <span>Items</span>
+                <span>Total</span>
+                <span>Status</span>
+            </div>
+
+            @if (selectedCustomerOrders().length === 0) {
+                <div class="state-row">No orders yet.</div>
+            }
+
+            @for (o of selectedCustomerOrders(); track o.id) {
+                <div class="order-row">
+                    <span class="order-id">{{ o.id }}</span>
+                    <span class="muted">{{ formatDate(o.date) }}</span>
+                    <span class="muted">{{ o.items.length }}</span>
+                    <span class="amount">{{ formatCurrency(o.total) }}</span>
+                    <span>
+            <span class="pill" [class.pill-active]="o.status === 'delivered'">
+              {{ o.status }}
+            </span>
+          </span>
+                </div>
+            }
+        </div>
+    </div>
+}
