@@ -8,6 +8,7 @@
 // do), so they stay purely client-side and are layered on top of the
 // server-computed subtotal for display only.
 import { Injectable, signal, computed, inject } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, throwError } from 'rxjs';
@@ -33,7 +34,14 @@ export class CartService {
   readonly error = signal<string | null>(null);
 
   readonly items      = computed<CartItemResponse[]>(() => this.cart()?.items ?? []);
-  readonly itemCount  = computed(() => this.cart()?.itemCount ?? 0);
+
+  /** Total quantity across all line items (e.g. 2 of the same product + 1 of
+   * another = 3), not the number of distinct line items. The backend's
+   * CartResponse.itemCount counts distinct items, which isn't what a cart
+   * badge should show, so this is derived client-side instead. */
+  readonly itemCount = computed(() =>
+      this.items().reduce((sum, item) => sum + item.quantity, 0)
+  );
 
   /** Server-computed subtotal (sum of each item's effectivePrice * quantity). */
   readonly subtotal = computed(() => this.cart()?.subtotal ?? 0);
@@ -59,9 +67,20 @@ export class CartService {
   });
 
   constructor() {
-    if (this.auth.token()) {
-      this.loadCart();
-    }
+    // Reacts to auth.token() changing — logging in reloads the cart,
+    // logging out clears it. No manual refresh needed either way.
+    // Uses subscribe() rather than effect() so writing to signals here
+    // isn't subject to Angular's effect signal-write restriction (NG0600).
+    toObservable(this.auth.token).subscribe((token) => {
+      if (token) {
+        this.loadCart();
+      } else {
+        this.cart.set(null);
+        this._discount.set(0);
+        this._couponCode.set('');
+        this.error.set(null);
+      }
+    });
   }
 
   /** Fetch the current user's cart. Safe to call for a guest — it just
