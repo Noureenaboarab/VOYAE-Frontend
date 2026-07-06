@@ -4,9 +4,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService } from '../../core/services/account.service';
-import { Address, Order, UserProfile } from '../../core/models';
+import { Address, AddressCreateRequest, Order, UserProfile } from '../../core/models';
 import { AccountResolvedData } from '../../core/resolvers/account.resolver';
 
 type AccountSection = 'personal' | 'orders' | 'wishlist' | 'addresses' | 'payment' | 'preferences';
@@ -14,7 +15,7 @@ type AccountSection = 'personal' | 'orders' | 'wishlist' | 'addresses' | 'paymen
 @Component({
   selector: 'voy-account',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './account.component.html',
   styleUrl: './account.component.scss',
 })
@@ -32,6 +33,18 @@ export class AccountComponent {
   addressesLoading = signal(false);
   addressesError = signal<string | null>(null);
   defaultAddressUpdatingId = signal<number | null>(null);
+  deletingAddressId = signal<number | null>(null);
+  deleteConfirmAddressId = signal<number | null>(null);
+  addressFormVisible = signal(false);
+  creatingAddress = signal(false);
+  createAddressError = signal<string | null>(null);
+  newAddress: AddressCreateRequest = {
+    label: 'Home',
+    street: '',
+    city: '',
+    country: '',
+    postalCode: '',
+  };
 
   private ordersLoaded = false;
   private addressesLoaded = false;
@@ -138,6 +151,44 @@ export class AccountComponent {
       .join(', ');
   }
 
+  showAddressForm(): void {
+    this.addressFormVisible.set(true);
+    this.createAddressError.set(null);
+  }
+
+  hideAddressForm(): void {
+    this.addressFormVisible.set(false);
+    this.createAddressError.set(null);
+    this.newAddress = {
+      label: 'Home',
+      street: '',
+      city: '',
+      country: '',
+      postalCode: '',
+    };
+  }
+
+  submitAddress(): void {
+    if (this.creatingAddress()) return;
+
+    const draft = this.newAddress;
+    this.createAddressError.set(null);
+    this.creatingAddress.set(true);
+
+    this.accountService.createAddress(draft).subscribe({
+      next: () => {
+        this.creatingAddress.set(false);
+        this.hideAddressForm();
+        this.loadAddresses(true);
+      },
+      error: err => {
+        console.error('Failed to create address', err);
+        this.createAddressError.set('Could not add this address. Please try again.');
+        this.creatingAddress.set(false);
+      },
+    });
+  }
+
   setDefaultAddress(address: Address): void {
     if (address.isDefault || this.defaultAddressUpdatingId() !== null) return;
 
@@ -155,6 +206,35 @@ export class AccountComponent {
         this.defaultAddressUpdatingId.set(null);
       },
     });
+  }
+
+  removeAddress(address: Address): void {
+    if (this.deletingAddressId() !== null) return;
+
+    if (this.deleteConfirmAddressId() !== address.id) {
+      this.deleteConfirmAddressId.set(address.id);
+      return;
+    }
+
+    this.deletingAddressId.set(address.id);
+    this.addressesError.set(null);
+    this.deleteConfirmAddressId.set(null);
+
+    this.accountService.deleteAddress(address.id).subscribe({
+      next: () => {
+        this.deletingAddressId.set(null);
+        this.loadAddresses(true);
+      },
+      error: err => {
+        console.error('Failed to delete address', err);
+        this.addressesError.set('Could not remove this address. Please try again.');
+        this.deletingAddressId.set(null);
+      },
+    });
+  }
+
+  cancelDeleteAddress(): void {
+    this.deleteConfirmAddressId.set(null);
   }
 
   private loadOrders(force = false): void {

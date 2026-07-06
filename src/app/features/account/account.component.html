@@ -233,7 +233,94 @@
                     Saved shipping addresses for this account.
                   </p>
                 </div>
+
+                <button
+                  type="button"
+                  class="btn btn--ghost btn--sm"
+                  (click)="showAddressForm()"
+                  [disabled]="addressFormVisible()">
+                  Add address
+                </button>
               </div>
+
+              @if (addressFormVisible()) {
+                <form class="address-form" (ngSubmit)="submitAddress()">
+                  <div class="address-form__grid">
+                    <div class="form-group">
+                      <label class="form-label" for="address-label">Label</label>
+                      <input
+                        id="address-label"
+                        class="form-control"
+                        type="text"
+                        [(ngModel)]="newAddress.label"
+                        name="label"
+                        placeholder="Home"
+                        required />
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="address-country">Country</label>
+                      <input
+                        id="address-country"
+                        class="form-control"
+                        type="text"
+                        [(ngModel)]="newAddress.country"
+                        name="country"
+                        placeholder="Egypt"
+                        required />
+                    </div>
+
+                    <div class="form-group address-form__full">
+                      <label class="form-label" for="address-street">Street</label>
+                      <input
+                        id="address-street"
+                        class="form-control"
+                        type="text"
+                        [(ngModel)]="newAddress.street"
+                        name="street"
+                        placeholder="12 El Tahrir Street, Apartment 5"
+                        required />
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="address-city">City</label>
+                      <input
+                        id="address-city"
+                        class="form-control"
+                        type="text"
+                        [(ngModel)]="newAddress.city"
+                        name="city"
+                        placeholder="Cairo"
+                        required />
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="address-postal-code">Postal code</label>
+                      <input
+                        id="address-postal-code"
+                        class="form-control"
+                        type="text"
+                        [(ngModel)]="newAddress.postalCode"
+                        name="postalCode"
+                        placeholder="11511"
+                        required />
+                    </div>
+                  </div>
+
+                  @if (createAddressError()) {
+                    <p class="orders-state orders-state--error">{{ createAddressError() }}</p>
+                  }
+
+                  <div class="address-form__actions">
+                    <button type="button" class="btn btn--ghost btn--sm" (click)="hideAddressForm()">
+                      Cancel
+                    </button>
+                    <button type="submit" class="btn btn--primary btn--sm" [disabled]="creatingAddress()">
+                      {{ creatingAddress() ? 'Saving...' : 'Save address' }}
+                    </button>
+                  </div>
+                </form>
+              }
 
               @if (addressesLoading()) {
                 <p class="orders-state">Loading addresses...</p>
@@ -252,15 +339,73 @@
                         </div>
 
                         @if (address.isDefault) {
-                          <span class="address-card__badge">Default</span>
+                          <div class="address-card__actions">
+                            <span class="address-card__badge">Default</span>
+                            @if (deleteConfirmAddressId() === address.id) {
+                              <div class="address-card__confirm-row">
+                                <span class="address-card__confirm-text">Remove this address?</span>
+                                <button
+                                  type="button"
+                                  class="btn btn--ghost btn--sm address-card__danger"
+                                  [disabled]="deletingAddressId() === address.id"
+                                  (click)="removeAddress(address)">
+                                  {{ deletingAddressId() === address.id ? 'Removing...' : 'Yes, remove' }}
+                                </button>
+                                <button
+                                  type="button"
+                                  class="btn btn--ghost btn--sm"
+                                  [disabled]="deletingAddressId() === address.id"
+                                  (click)="cancelDeleteAddress()">
+                                  Cancel
+                                </button>
+                              </div>
+                            } @else {
+                              <button
+                                type="button"
+                                class="btn btn--ghost btn--sm address-card__danger"
+                                [disabled]="deletingAddressId() === address.id"
+                                (click)="removeAddress(address)">
+                                {{ deletingAddressId() === address.id ? 'Removing...' : 'Remove' }}
+                              </button>
+                            }
+                          </div>
                         } @else {
-                          <button
-                            type="button"
-                            class="btn btn--ghost btn--sm address-card__action"
-                            [disabled]="defaultAddressUpdatingId() === address.id"
-                            (click)="setDefaultAddress(address)">
-                            {{ defaultAddressUpdatingId() === address.id ? 'Updating...' : 'Set as default' }}
-                          </button>
+                          <div class="address-card__actions">
+                            <button
+                              type="button"
+                              class="btn btn--ghost btn--sm address-card__action"
+                              [disabled]="defaultAddressUpdatingId() === address.id"
+                              (click)="setDefaultAddress(address)">
+                              {{ defaultAddressUpdatingId() === address.id ? 'Updating...' : 'Set as default' }}
+                            </button>
+                            @if (deleteConfirmAddressId() === address.id) {
+                              <div class="address-card__confirm-row">
+                                <span class="address-card__confirm-text">Remove this address?</span>
+                                <button
+                                  type="button"
+                                  class="btn btn--ghost btn--sm address-card__danger"
+                                  [disabled]="deletingAddressId() === address.id"
+                                  (click)="removeAddress(address)">
+                                  {{ deletingAddressId() === address.id ? 'Removing...' : 'Yes, remove' }}
+                                </button>
+                                <button
+                                  type="button"
+                                  class="btn btn--ghost btn--sm"
+                                  [disabled]="deletingAddressId() === address.id"
+                                  (click)="cancelDeleteAddress()">
+                                  Cancel
+                                </button>
+                              </div>
+                            } @else {
+                              <button
+                                type="button"
+                                class="btn btn--ghost btn--sm address-card__danger"
+                                [disabled]="deletingAddressId() === address.id"
+                                (click)="removeAddress(address)">
+                                {{ deletingAddressId() === address.id ? 'Removing...' : 'Remove' }}
+                              </button>
+                            }
+                          </div>
                         }
                       </div>
 

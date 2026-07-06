@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, of, switchMap } from 'rxjs';
-import { Address, BackendOrder, Order, UserProfile } from '../models';
+import { Address, AddressCreateRequest, BackendOrder, Order, UserProfile } from '../models';
 
 function mapUser(data: any): UserProfile {
   return {
@@ -81,8 +81,16 @@ export class AccountService {
     );
   }
 
+  createAddress(address: AddressCreateRequest): Observable<Address> {
+    return this.http.post<any>('/api/address', address).pipe(map(mapAddress));
+  }
+
   setDefaultAddress(id: number): Observable<void> {
     return this.http.patch<void>(`/api/address/${id}`, {});
+  }
+
+  deleteAddress(id: number): Observable<void> {
+    return this.http.delete<void>(`/api/address/${id}`);
   }
 
   getOrder(id: string | number): Observable<Order> {
