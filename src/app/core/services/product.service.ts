@@ -3,6 +3,8 @@
 // ============================================================
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { Product, ProductDTO, ProductFeature, ProductFilter } from '../models';
 
 // ── Hardcoded per-product metadata ───────────────────────────
@@ -19,12 +21,26 @@ const CARRY_ON_FEATURES: ProductFeature[] = [
   { title: 'Aircraft-Grade Aluminum Frame', description: 'Telescoping handle constructed from lightweight yet incredibly strong aircraft-grade aluminum.' },
 ];
 
+// Shape of Spring's default Page<T> JSON serialization
+interface SpringPage<T> {
+  content:       T[];
+  totalPages:    number;
+  totalElements: number;
+  number:        number; // current page index
+  size:          number;
+}
+
+// How many products to request per backend page. Kept modest rather than
+// a single giant page — the service walks all pages regardless, so this
+// only controls request count vs. payload size per request.
+const FETCH_PAGE_SIZE = 100;
+
 // ── DTO normaliser ────────────────────────────────────────────
 function toProduct(dto: ProductDTO): Product {
   const type    = dto.categoryName ?? dto.category?.name ?? '';
   const inStock = dto.inStock !== undefined
-    ? dto.inStock
-    : (dto.quantity ?? 0) > 0;
+      ? dto.inStock
+      : (dto.quantity ?? 0) > 0;
 
   return {
     id:          String(dto.id),
@@ -61,14 +77,45 @@ export class ProductService {
     this.loadFromApi();
   }
 
+  // Fetches every page from /api/products and merges them into one list,
+  // so client-side filtering/sorting sees the whole catalog rather than
+  // just the first page.
   loadFromApi(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.http.get<any>('/api/products').subscribe({
-      next: (response) => {
-        const dtos = response.content ?? response;
-        this._products.set(dtos.map(toProduct));
-        this.loading.set(false);
+
+    this.fetchPage(0).subscribe({
+      next: (first) => {
+        const totalPages = first.totalPages ?? 1;
+
+        if (totalPages <= 1) {
+          this._products.set(first.content.map(toProduct));
+          this.loading.set(false);
+          return;
+        }
+
+        const remainingRequests = Array.from(
+            { length: totalPages - 1 },
+            (_, i) => this.fetchPage(i + 1)
+        );
+
+        forkJoin(remainingRequests).subscribe({
+          next: (rest) => {
+            const allDtos = [
+              ...first.content,
+              ...rest.flatMap(p => p.content),
+            ];
+            this._products.set(allDtos.map(toProduct));
+            this.loading.set(false);
+          },
+          error: (err) => {
+            console.error('Failed to load remaining product pages', err);
+            // Still show what we have from the first page rather than nothing
+            this._products.set(first.content.map(toProduct));
+            this.error.set('Some products may be missing. Please refresh.');
+            this.loading.set(false);
+          },
+        });
       },
       error: (err) => {
         console.error('Failed to load products', err);
@@ -76,6 +123,24 @@ export class ProductService {
         this.loading.set(false);
       },
     });
+  }
+
+  private fetchPage(page: number) {
+    return this.http.get<SpringPage<ProductDTO> | ProductDTO[]>('/api/products', {
+      params: { page, size: FETCH_PAGE_SIZE, sortBy: 'featured' },
+    }).pipe(
+        map((response): SpringPage<ProductDTO> => {
+          // Defensive: handle a plain array response too, in case pagination
+          // is ever disabled on the backend.
+          if (Array.isArray(response)) {
+            return { content: response, totalPages: 1, totalElements: response.length, number: 0, size: response.length };
+          }
+          return response;
+        }),
+        catchError((err) => {
+          throw err;
+        })
+    );
   }
 
   readonly filteredProducts = computed(() => {
@@ -101,12 +166,12 @@ export class ProductService {
         break;
       case 'newest':
         items = [...items].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         break;
       default:
         items = [...items].sort(
-          (a, b) => (b.isBestseller ? 1 : 0) - (a.isBestseller ? 1 : 0)
+            (a, b) => (b.isBestseller ? 1 : 0) - (a.isBestseller ? 1 : 0)
         );
         break;
     }
@@ -115,7 +180,7 @@ export class ProductService {
   });
 
   readonly availableTypes = computed(() =>
-    [...new Set(this._products().map(p => p.type).filter(Boolean))].sort()
+      [...new Set(this._products().map(p => p.type).filter(Boolean))].sort()
   );
 
   getById(id: string): Product | undefined {
@@ -129,8 +194,8 @@ export class ProductService {
   toggleType(type: string): void {
     this.filter.update(f => {
       const types = f.types.includes(type)
-        ? f.types.filter(t => t !== type)
-        : [...f.types, type];
+          ? f.types.filter(t => t !== type)
+          : [...f.types, type];
       return { ...f, types };
     });
   }

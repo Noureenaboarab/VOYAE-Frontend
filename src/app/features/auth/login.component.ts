@@ -5,50 +5,61 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
-  selector: 'voy-login',
-  standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
+    selector: 'voy-login',
+    standalone: true,
+    imports: [CommonModule, RouterLink, ReactiveFormsModule],
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private authService = inject(AuthService);
-  private fb = inject(FormBuilder);
+    private router = inject(Router);
+    private route = inject(ActivatedRoute);
+    private authService = inject(AuthService);
+    private fb = inject(FormBuilder);
 
-  form = this.fb.group({
-    email:    ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
-  });
-
-  loading = signal(false);
-  error   = signal<string | null>(null);
-
-  get f() {
-    return this.form.controls;
-  }
-
-  onSubmit(): void {
-    this.form.markAllAsTouched();
-    if (this.form.invalid) return;
-
-    this.loading.set(true);
-    this.error.set(null);
-
-    const { email, password } = this.form.value;
-
-    this.authService.login({ email: email!, password: password! }).subscribe({
-      next: () => {
-        this.loading.set(false);
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '';
-        this.router.navigateByUrl(returnUrl);
-      },
-      error: (err) => {
-        this.loading.set(false);
-        const msg = err.error?.message ?? 'Invalid email or password. Please try again.';
-        this.error.set(msg);
-      },
+    form = this.fb.group({
+        email:    ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(8)]],
     });
-  }
+
+    loading = signal(false);
+    error   = signal<string | null>(null);
+
+    get f() {
+        return this.form.controls;
+    }
+
+    onSubmit(): void {
+        this.form.markAllAsTouched();
+        if (this.form.invalid) return;
+
+        this.loading.set(true);
+        this.error.set(null);
+
+        const { email, password } = this.form.value;
+
+        this.authService.login({ email: email!, password: password! }).subscribe({
+            next: () => {
+                this.loading.set(false);
+
+                console.log('token:', this.authService.token());
+                console.log('role:', this.authService.role());
+                console.log('isAdmin:', this.authService.isAdmin());
+                // Admins always land on the admin products page, regardless of
+                // whatever page they were on before hitting /login.
+                if (this.authService.isAdmin()) {
+                    this.router.navigateByUrl('/admin/products');
+                    return;
+                }
+
+                const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '';
+                this.router.navigateByUrl(returnUrl);
+            },
+            error: (err) => {
+                this.loading.set(false);
+                const msg = err.error?.message ?? 'Invalid email or password. Please try again.';
+                this.error.set(msg);
+            },
+        });
+    }
 }

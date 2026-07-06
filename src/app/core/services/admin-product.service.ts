@@ -1,54 +1,77 @@
 // ============================================================
 // VOYÆ — Admin Product Service
-// Mock data (24 products) — swap loadFromApi() bodies for live calls
+// Talks to /api/admin/products on the Java backend.
 // ============================================================
-import { Injectable, signal, computed } from '@angular/core';
-import { AdminProduct, AdminProductStatus } from '../models/admin.models';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, tap } from 'rxjs';
+import {
+  AdminProduct,
+  AdminProductResponse,
+  AdminProductStatus,
+  ProductCreateRequest,
+  ProductUpdateRequest,
+} from '../models/admin.models';
 
-// ── Helpers ─────────────────────────────────────────────────
-function mkProduct(
-  id: string, name: string, color: string, type: string,
-  sku: string, price: number, stock: number | null,
-  status: AdminProductStatus,
-  badge: AdminProduct['badge'],
-  imageUrl: string, createdAt: string,
-): AdminProduct {
-  return { id, name, color, type, sku, price, discount: 0, stock, status, badge, imageUrl, description: '', createdAt };
+const NAME_SEPARATOR = ' — ';
+
+// TODO: replace with a real categories lookup (e.g. GET /api/categories)
+// once that endpoint exists. These IDs must match your `categories` table.
+const CATEGORY_IDS: Record<string, number> = {
+  'The Carry-On': 1,
+  'The Check-In': 2,
+  'The Large':    3,
+};
+
+const LOW_STOCK_THRESHOLD = 20;
+
+function computeStatus(quantity: number | null): AdminProductStatus {
+  if (!quantity || quantity <= 0) return 'out-of-stock';
+  if (quantity < LOW_STOCK_THRESHOLD) return 'low-stock';
+  return 'active';
 }
 
-// ── Mock data (19 active, 3 low-stock, 2 out-of-stock = 24 total) ──
-const MOCK_PRODUCTS: AdminProduct[] = [
-  mkProduct('1',  'The Carry-On', 'Desert Sand',    'The Carry-On', 'VY-CO-DS',  295, 142,  'active',       'bestseller', '/assets/images/carry-on-desert-sand.jpg',    '2024-01-10T00:00:00Z'),
-  mkProduct('2',  'The Carry-On', 'Obsidian Black', 'The Carry-On', 'VY-CO-OB',  295, 98,   'active',       null,         '/assets/images/carry-on-obsidian-black.jpg', '2024-01-10T00:00:00Z'),
-  mkProduct('3',  'The Carry-On', 'Chalk White',    'The Carry-On', 'VY-CO-CW',  295, 76,   'active',       null,         '/assets/images/carry-on-chalk-white.jpg',    '2024-01-10T00:00:00Z'),
-  mkProduct('4',  'The Check-In', 'Desert Sand',    'The Check-In', 'VY-CI-DS',  395, 54,   'active',       null,         '/assets/images/check-in-desert-sand.jpg',    '2024-02-14T00:00:00Z'),
-  mkProduct('5',  'The Check-In', 'Slate Grey',     'The Check-In', 'VY-CI-SG',  395, 31,   'active',       'new',        '/assets/images/large-slate-grey.jpg',        '2024-03-01T00:00:00Z'),
-  mkProduct('6',  'The Check-In', 'Navy Blue',      'The Check-In', 'VY-CI-NB',  395, null, 'out-of-stock', null,         '/assets/images/large-navy-blue.jpg',         '2024-02-14T00:00:00Z'),
-  mkProduct('7',  'The Large',    'Forest Green',   'The Large',    'VY-LG-FG',  445, 19,   'low-stock',    null,         '/assets/images/large-forest-green.jpg',      '2024-03-20T00:00:00Z'),
-  mkProduct('8',  'The Large',    'Obsidian Black', 'The Large',    'VY-LG-OB',  445, 63,   'active',       null,         '/assets/images/carry-on-obsidian-black.jpg', '2024-03-20T00:00:00Z'),
-  mkProduct('9',  'The Carry-On', 'Sage Green',     'The Carry-On', 'VY-CO-SGR', 295, 45,   'active',       null,         '/assets/images/large-forest-green.jpg',      '2024-04-05T00:00:00Z'),
-  mkProduct('10', 'The Carry-On', 'Midnight Blue',  'The Carry-On', 'VY-CO-MB',  295, 88,   'active',       null,         '/assets/images/large-navy-blue.jpg',         '2024-04-05T00:00:00Z'),
-  mkProduct('11', 'The Carry-On', 'Forest Green',   'The Carry-On', 'VY-CO-FG',  295, 12,   'low-stock',    null,         '/assets/images/large-forest-green.jpg',      '2024-04-10T00:00:00Z'),
-  mkProduct('12', 'The Check-In', 'Chalk White',    'The Check-In', 'VY-CI-CW',  395, 67,   'active',       null,         '/assets/images/carry-on-chalk-white.jpg',    '2024-02-14T00:00:00Z'),
-  mkProduct('13', 'The Check-In', 'Obsidian Black', 'The Check-In', 'VY-CI-OB',  395, 34,   'active',       null,         '/assets/images/check-in-obsidian-black.jpg', '2024-02-14T00:00:00Z'),
-  mkProduct('14', 'The Check-In', 'Forest Green',   'The Check-In', 'VY-CI-FG',  395, null, 'out-of-stock', null,         '/assets/images/large-forest-green.jpg',      '2024-05-01T00:00:00Z'),
-  mkProduct('15', 'The Large',    'Desert Sand',    'The Large',    'VY-LG-DS',  445, 28,   'active',       null,         '/assets/images/carry-on-desert-sand.jpg',    '2024-03-20T00:00:00Z'),
-  mkProduct('16', 'The Large',    'Chalk White',    'The Large',    'VY-LG-CW',  445, 41,   'active',       null,         '/assets/images/carry-on-chalk-white.jpg',    '2024-03-20T00:00:00Z'),
-  mkProduct('17', 'The Large',    'Slate Grey',     'The Large',    'VY-LG-SG',  445, 15,   'low-stock',    null,         '/assets/images/large-slate-grey.jpg',        '2024-03-20T00:00:00Z'),
-  mkProduct('18', 'The Large',    'Navy Blue',      'The Large',    'VY-LG-NB',  445, 52,   'active',       null,         '/assets/images/large-navy-blue.jpg',         '2024-03-20T00:00:00Z'),
-  mkProduct('19', 'The Carry-On', 'Navy Blue',      'The Carry-On', 'VY-CO-NVY', 295, 73,   'active',       'bestseller', '/assets/images/large-navy-blue.jpg',         '2024-01-10T00:00:00Z'),
-  mkProduct('20', 'The Carry-On', 'Slate Grey',     'The Carry-On', 'VY-CO-SLG', 295, 91,   'active',       null,         '/assets/images/large-slate-grey.jpg',        '2024-01-10T00:00:00Z'),
-  mkProduct('21', 'The Check-In', 'Sage Green',     'The Check-In', 'VY-CI-SGR', 395, 26,   'active',       null,         '/assets/images/large-forest-green.jpg',      '2024-05-10T00:00:00Z'),
-  mkProduct('22', 'The Check-In', 'Midnight Blue',  'The Check-In', 'VY-CI-MB',  395, 39,   'active',       null,         '/assets/images/large-navy-blue.jpg',         '2024-05-10T00:00:00Z'),
-  mkProduct('23', 'The Large',    'Midnight Blue',  'The Large',    'VY-LG-MB',  445, 85,   'active',       'new',        '/assets/images/large-navy-blue.jpg',         '2024-06-01T00:00:00Z'),
-  mkProduct('24', 'The Carry-On', 'Terracotta',     'The Carry-On', 'VY-CO-TC',  295, 61,   'active',       null,         '/assets/images/carry-on-desert-sand.jpg',    '2024-06-15T00:00:00Z'),
-];
+function splitName(name: string): { baseName: string; color: string } {
+  const idx = name.indexOf(NAME_SEPARATOR);
+  if (idx === -1) return { baseName: name, color: '' };
+  return {
+    baseName: name.slice(0, idx).trim(),
+    color:    name.slice(idx + NAME_SEPARATOR.length).trim(),
+  };
+}
 
-// ── Service ──────────────────────────────────────────────────
+export function joinName(type: string, color: string): string {
+  return color ? `${type}${NAME_SEPARATOR}${color}` : type;
+}
+
+function mapToAdminProduct(res: AdminProductResponse): AdminProduct {
+  const { baseName, color } = splitName(res.name);
+  return {
+    id:           String(res.id),
+    name:         res.name,
+    baseName,
+    color,
+    categoryId:   res.categoryId,
+    categoryName: res.categoryName ?? '',
+    price:        res.basePrice,
+    discount:     res.discount,
+    stock:        res.quantity,
+    status:       computeStatus(res.quantity),
+    imageUrl:     res.imageUrl,
+    description:  res.description,
+    createdAt:    res.createdAt,
+    deleted:      res.deleted,
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminProductService {
+  private http = inject(HttpClient);
+  private readonly baseUrl = '/api/admin/products';
 
-  readonly products = signal<AdminProduct[]>([...MOCK_PRODUCTS]);
+  readonly products = signal<AdminProduct[]>([]);
+  readonly loading   = signal(false);
+  readonly error     = signal<string | null>(null);
 
   // Tab counts (derived, exposed so components don't recompute)
   readonly totalCount      = computed(() => this.products().length);
@@ -56,18 +79,63 @@ export class AdminProductService {
   readonly lowStockCount   = computed(() => this.products().filter(p => p.status === 'low-stock').length);
   readonly outOfStockCount = computed(() => this.products().filter(p => p.status === 'out-of-stock').length);
 
-  // ── CRUD ──────────────────────────────────────────────────
-  addProduct(product: AdminProduct): void {
-    this.products.update(ps => [product, ...ps]);
+  // ── Category helper (exposed for the modal's <select>) ────
+  readonly categoryOptions = Object.keys(CATEGORY_IDS);
+
+  getCategoryId(type: string): number | null {
+    return CATEGORY_IDS[type] ?? null;
   }
 
-  updateProduct(updated: AdminProduct): void {
-    this.products.update(ps =>
-      ps.map(p => p.id === updated.id ? updated : p)
+  // ── Load ─────────────────────────────────────────────────
+  loadProducts(): Observable<AdminProductResponse[]> {
+    this.loading.set(true);
+    this.error.set(null);
+    return this.http.get<AdminProductResponse[]>(this.baseUrl).pipe(
+        tap({
+          next: (list) => {
+            this.products.set(list.map(mapToAdminProduct));
+            this.loading.set(false);
+          },
+          error: () => {
+            this.error.set('Failed to load products.');
+            this.loading.set(false);
+          },
+        })
     );
   }
 
-  deleteProduct(id: string): void {
-    this.products.update(ps => ps.filter(p => p.id !== id));
+  // ── CRUD ──────────────────────────────────────────────────
+  addProduct(request: ProductCreateRequest): Observable<AdminProductResponse> {
+    return this.http.post<AdminProductResponse>(this.baseUrl, request).pipe(
+        tap(created => {
+          this.products.update(ps => [mapToAdminProduct(created), ...ps]);
+        })
+    );
+  }
+
+  updateProduct(id: string, request: ProductUpdateRequest): Observable<AdminProductResponse> {
+    return this.http.patch<AdminProductResponse>(`${this.baseUrl}/${id}`, request).pipe(
+        tap(updated => {
+          const mapped = mapToAdminProduct(updated);
+          this.products.update(ps => ps.map(p => p.id === mapped.id ? mapped : p));
+        })
+    );
+  }
+
+  deleteProduct(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`).pipe(
+        tap(() => {
+          this.products.update(ps => ps.filter(p => p.id !== id));
+        })
+    );
+  }
+
+  restoreProduct(id: string): Observable<AdminProductResponse> {
+    return this.http.post<AdminProductResponse>(`${this.baseUrl}/${id}/restore`, {}).pipe(
+        tap(restored => {
+          const mapped = mapToAdminProduct(restored);
+          this.products.update(ps => ps.map(p => p.id === mapped.id ? mapped : p));
+        })
+    );
   }
 }

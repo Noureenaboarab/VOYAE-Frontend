@@ -4,6 +4,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { adminGuard } from './core/guards/admin.guard';
 import { accountResolver } from './core/resolvers/account.resolver';
 import { offersResolver } from './core/resolvers/offers.resolver';
 
@@ -11,21 +12,21 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./features/home/home.component').then(m => m.HomeComponent),
+        import('./features/home/home.component').then(m => m.HomeComponent),
     title: 'VOYAE – Luggage, Engineered',
   },
   {
     path: 'shop',
     loadComponent: () =>
-      import('./features/shop/shop.component').then(m => m.ShopComponent),
+        import('./features/shop/shop.component').then(m => m.ShopComponent),
     title: 'The Collection – VOYAE',
   },
   {
     path: 'search',
     loadComponent: () =>
-      import('./features/search-results/search-results.component').then(
-        m => m.SearchResultsComponent
-      ),
+        import('./features/search-results/search-results.component').then(
+            m => m.SearchResultsComponent
+        ),
     title: 'Search – VOYAE',
   },
   {
@@ -36,53 +37,53 @@ export const routes: Routes = [
   {
     path: 'product/:id',
     loadComponent: () =>
-      import('./features/product-detail/product-detail.component').then(
-        m => m.ProductDetailComponent
-      ),
+        import('./features/product-detail/product-detail.component').then(
+            m => m.ProductDetailComponent
+        ),
     title: 'Product – VOYAE',
   },
   {
     path: 'ai-advisor',
     loadComponent: () =>
-      import('./features/ai-advisor/ai-advisor.component').then(
-        m => m.AiAdvisorComponent
-      ),
+        import('./features/ai-advisor/ai-advisor.component').then(
+            m => m.AiAdvisorComponent
+        ),
     title: 'AI Advisor – VOYAE',
   },
   {
     path: 'login',
     loadComponent: () =>
-      import('./features/auth/login.component').then(m => m.LoginComponent),
+        import('./features/auth/login.component').then(m => m.LoginComponent),
     canActivate: [guestGuard],
     title: 'Sign In – VOYAE',
   },
   {
     path: 'signup',
     loadComponent: () =>
-      import('./features/auth/signup.component').then(m => m.SignupComponent),
+        import('./features/auth/signup.component').then(m => m.SignupComponent),
     canActivate: [guestGuard],
     title: 'Create Account – VOYAE',
   },
   {
     path: 'checkout',
     loadComponent: () =>
-      import('./features/checkout/checkout.component').then(m => m.CheckoutComponent),
+        import('./features/checkout/checkout.component').then(m => m.CheckoutComponent),
     canActivate: [authGuard],
     title: 'Checkout – VOYAE',
   },
   {
     path: 'order-confirmation',
     loadComponent: () =>
-      import('./features/checkout/order-confirmation/order-confirmation.component').then(
-        m => m.OrderConfirmationComponent
-      ),
+        import('./features/checkout/order-confirmation/order-confirmation.component').then(
+            m => m.OrderConfirmationComponent
+        ),
     canActivate: [authGuard],
     title: 'Order Confirmed – VOYAE',
   },
   {
     path: 'account',
     loadComponent: () =>
-      import('./features/account/account.component').then(m => m.AccountComponent),
+        import('./features/account/account.component').then(m => m.AccountComponent),
     canActivate: [authGuard],
     resolve: { account: accountResolver },
     title: 'My Account – VOYAE',
@@ -90,42 +91,44 @@ export const routes: Routes = [
   {
     path: 'offers',
     loadComponent: () =>
-      import('./features/offers/offers.component').then(m => m.OffersComponent),
+        import('./features/offers/offers.component').then(m => m.OffersComponent),
     resolve: { offers: offersResolver },
     title: 'Bundle Offers – VOYAE',
   },
   {
     path: 'cart',
     loadComponent: () =>
-      import('./features/cart/cart.component').then(m => m.CartComponent),
+        import('./features/cart/cart.component').then(m => m.CartComponent),
     title: 'Bag – VOYAE',
   },
 
   // ── Admin ────────────────────────────────────────────────
-  // Add canActivate: [adminGuard] here once auth guard is built
+  // adminGuard blocks the whole subtree: any non-admin (logged out or
+  // logged in as a regular user) hitting /admin/** is redirected to '/'.
   {
     path: 'admin',
     loadComponent: () =>
-      import('./features/admin/admin-layout/admin-layout.component').then(
-        m => m.AdminLayoutComponent
-      ),
+        import('./features/admin/admin-layout/admin-layout.component').then(
+            m => m.AdminLayoutComponent
+        ),
+    canActivate: [adminGuard],
     title: 'Admin – VOYAE',
     children: [
       { path: '', redirectTo: 'products', pathMatch: 'full' },
       {
         path: 'products',
         loadComponent: () =>
-          import('./features/admin/products/admin-products.component').then(
-            m => m.AdminProductsComponent
-          ),
+            import('./features/admin/products/admin-products.component').then(
+                m => m.AdminProductsComponent
+            ),
         title: 'Products – VOYAE Admin',
       },
       {
         path: 'orders',
         loadComponent: () =>
-          import('./features/admin/orders/admin-orders.component').then(
-            m => m.AdminOrdersComponent
-          ),
+            import('./features/admin/orders/admin-orders.component').then(
+                m => m.AdminOrdersComponent
+            ),
         title: 'Orders – VOYAE Admin',
       },
       {
@@ -139,15 +142,15 @@ export const routes: Routes = [
       {
         path: 'discounts',
         loadComponent: () =>
-          import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
+            import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
         title: 'Discounts – VOYAE Admin',
       },
       {
         path: 'engine',
         loadComponent: () =>
-          import('./features/admin/engine/admin-engine.component').then(
-            m => m.AdminEngineComponent
-          ),
+            import('./features/admin/engine/admin-engine.component').then(
+                m => m.AdminEngineComponent
+            ),
         title: 'Engine – VOYAE Admin',
       },
     ],
@@ -157,7 +160,7 @@ export const routes: Routes = [
   {
     path: '**',
     loadComponent: () =>
-      import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
+        import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
     title: 'Page Not Found – VOYAE',
   },
 ];
