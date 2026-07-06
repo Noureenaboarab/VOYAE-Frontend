@@ -1,10 +1,11 @@
 // ============================================================
-// VOYÆ — Account / Profile Page
+// VOYAE - Account / Profile Page
 // ============================================================
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { AccountService } from '../../core/services/account.service';
 import { Order, UserProfile } from '../../core/models';
 import { AccountResolvedData } from '../../core/resolvers/account.resolver';
 
@@ -19,10 +20,16 @@ type AccountSection = 'personal' | 'orders' | 'wishlist' | 'addresses' | 'paymen
 })
 export class AccountComponent {
   private authService = inject(AuthService);
+  private accountService = inject(AccountService);
   private route = inject(ActivatedRoute);
 
   activeSection = signal<AccountSection>('personal');
   editingProfile = signal(false);
+  orders = signal<Order[]>([]);
+  ordersLoading = signal(false);
+  ordersError = signal<string | null>(null);
+
+  private ordersLoaded = false;
 
   navItems: { id: AccountSection; label: string; icon: string }[] = [
     { id: 'personal',    label: 'Personal Info',    icon: 'user' },
@@ -38,8 +45,9 @@ export class AccountComponent {
     return this.navItems.find(n => n.id === id)?.label ?? '';
   });
 
+  recentOrders = computed(() => this.orders().slice(0, 3));
+
   profile!: UserProfile;
-  recentOrders!: Order[];
 
   constructor() {
     const resolved: AccountResolvedData | null = this.route.snapshot.data['account'];
@@ -59,11 +67,7 @@ export class AccountComponent {
       };
     }
 
-    this.recentOrders = [
-      { id: '#VY-20481', date: 'Nov 12, 2024', items: [], status: 'delivered', total: 295 },
-      { id: '#VY-19903', date: 'Sep 13, 2024', items: [], status: 'delivered', total: 395 },
-      { id: '#VY-18574', date: 'Jun 28, 2024', items: [], status: 'delivered', total: 445 },
-    ];
+    this.loadOrders();
   }
 
   signOut(): void {
@@ -72,15 +76,39 @@ export class AccountComponent {
 
   setSection(id: AccountSection): void {
     this.activeSection.set(id);
+    if (id === 'orders') {
+      this.loadOrders();
+    }
   }
 
   getOrderDescription(order: Order): string {
-    const descriptions: Record<string, string> = {
-      '#VY-20481': 'The Carry-On — Desert Sand',
-      '#VY-19903': 'The Check-In — Obsidian Black',
-      '#VY-18574': 'The Large — Forest Green',
-    };
-    return descriptions[order.id] ?? 'Order';
+    if (order.items.length === 0) return 'No items';
+
+    const first = order.items[0];
+    const firstLabel = first.type ? `${first.name} - ${first.type}` : first.name;
+    return order.items.length === 1
+      ? firstLabel
+      : `${firstLabel} +${order.items.length - 1} more`;
+  }
+
+  formatDate(date: string): string {
+    return new Intl.DateTimeFormat('en', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(new Date(date));
+  }
+
+  formatTotal(total: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(total);
+  }
+
+  getItemCount(order: Order): string {
+    const count = order.items.reduce((sum, item) => sum + item.quantity, 0);
+    return `${count} ${count === 1 ? 'item' : 'items'}`;
   }
 
   getStatusLabel(status: string): string {
@@ -91,5 +119,25 @@ export class AccountComponent {
       returned:   'Returned',
     };
     return labels[status] ?? status;
+  }
+
+  private loadOrders(force = false): void {
+    if (this.ordersLoaded && !force) return;
+
+    this.ordersLoading.set(true);
+    this.ordersError.set(null);
+
+    this.accountService.getOrders().subscribe({
+      next: orders => {
+        this.orders.set(orders);
+        this.ordersLoaded = true;
+        this.ordersLoading.set(false);
+      },
+      error: err => {
+        console.error('Failed to load account orders', err);
+        this.ordersError.set('Could not load your orders. Please try again.');
+        this.ordersLoading.set(false);
+      },
+    });
   }
 }

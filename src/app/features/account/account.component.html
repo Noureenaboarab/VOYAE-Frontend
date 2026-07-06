@@ -162,21 +162,30 @@
               <div class="account-content-block" style="margin-top: var(--space-10)">
                 <div class="account-content-block__header">
                   <h2 class="account-content-block__title">Recent Orders</h2>
-                  <button class="btn btn--ghost btn--sm">View all</button>
+                  <button class="btn btn--ghost btn--sm" (click)="setSection('orders')">View all</button>
                 </div>
                 <div class="orders-list">
-                  @for (order of recentOrders; track order.id) {
+                  @if (ordersLoading()) {
+                    <p class="orders-state">Loading orders...</p>
+                  } @else if (ordersError()) {
+                    <p class="orders-state orders-state--error">{{ ordersError() }}</p>
+                  } @else if (recentOrders().length === 0) {
+                    <p class="orders-state">No orders yet.</p>
+                  }
+
+                  @for (order of recentOrders(); track order.id) {
                     <div class="order-row">
                       <div class="order-row__meta">
-                        <span class="order-row__id">{{ order.id }}</span>
-                        <span class="order-row__date text-muted">{{ order.date }}</span>
+                        <span class="order-row__date text-muted">{{ formatDate(order.date) }}</span>
                         <span class="order-row__desc text-muted">{{ getOrderDescription(order) }}</span>
+                        <span class="order-row__desc text-muted">{{ getItemCount(order) }}</span>
+                        <span class="order-row__total">{{ formatTotal(order.total) }}</span>
                       </div>
                       <div class="order-row__actions">
                         <span class="order-row__status order-row__status--{{ order.status }}">
                           {{ getStatusLabel(order.status) }}
                         </span>
-                        <button class="btn btn--ghost btn--sm">View →</button>
+                        <a class="btn btn--ghost btn--sm" [routerLink]="['/account/orders', order.id]">View -&gt;</a>
                       </div>
                     </div>
                   }
@@ -190,18 +199,27 @@
             <div class="account-content-block">
               <h1 class="account-content-block__title">Orders</h1>
               <div class="orders-list" style="margin-top: var(--space-6)">
-                @for (order of recentOrders; track order.id) {
+                @if (ordersLoading()) {
+                  <p class="orders-state">Loading orders...</p>
+                } @else if (ordersError()) {
+                  <p class="orders-state orders-state--error">{{ ordersError() }}</p>
+                } @else if (orders().length === 0) {
+                  <p class="orders-state">No orders yet.</p>
+                }
+
+                @for (order of orders(); track order.id) {
                   <div class="order-row">
                     <div class="order-row__meta">
-                      <span class="order-row__id">{{ order.id }}</span>
-                      <span class="order-row__date text-muted">{{ order.date }}</span>
+                      <span class="order-row__date text-muted">{{ formatDate(order.date) }}</span>
                       <span class="order-row__desc text-muted">{{ getOrderDescription(order) }}</span>
+                      <span class="order-row__desc text-muted">{{ getItemCount(order) }}</span>
+                      <span class="order-row__total">{{ formatTotal(order.total) }}</span>
                     </div>
                     <div class="order-row__actions">
                       <span class="order-row__status order-row__status--{{ order.status }}">
                         {{ getStatusLabel(order.status) }}
                       </span>
-                      <button class="btn btn--ghost btn--sm">View →</button>
+                      <a class="btn btn--ghost btn--sm" [routerLink]="['/account/orders', order.id]">View -&gt;</a>
                     </div>
                   </div>
                 }
