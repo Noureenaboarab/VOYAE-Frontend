@@ -25,11 +25,9 @@
         </div>
 
         <div class="table-card">
-            <div class="table-head">
+            <div class="table-head table-head-3col">
                 <span>Customer</span>
                 <span>Email</span>
-                <span>Joined</span>
-                <span>Spent</span>
                 <span>Status</span>
                 <span></span>
             </div>
@@ -38,15 +36,13 @@
                 <div class="state-row">No customers match your search.</div>
             }
 
-            @for (c of paginatedCustomers(); track c.email) {
-                <div class="table-row" (click)="selectCustomer(c.email)">
+            @for (c of paginatedCustomers(); track c.id) {
+                <div class="table-row table-row-3col" (click)="selectCustomer(c.id)">
                     <div class="customer-cell">
                         <div class="avatar">{{ c.initials }}</div>
                         <span class="name">{{ c.name }}</span>
                     </div>
                     <span class="muted">{{ c.email }}</span>
-                    <span class="muted">{{ formatDate(c.joinedDate) }}</span>
-                    <span class="amount">{{ formatCurrency(c.totalSpent) }}</span>
                     <span>
             <span class="pill" [class.pill-active]="c.status === 'active'">
               {{ getStatusLabel(c.status) }}
@@ -91,65 +87,67 @@
     <div class="page">
         <button class="back-link" (click)="backToList()">‹ Back to customers</button>
 
-        <div class="profile-card">
-            <div class="profile-main">
-                <div class="avatar avatar-lg">{{ c.initials }}</div>
-                <div>
-                    <h2>{{ c.name }}</h2>
-                    <span class="pill" [class.pill-active]="c.status === 'active'">
-            {{ getStatusLabel(c.status) }}
-          </span>
-                </div>
-            </div>
-
-            <div class="profile-details">
-                <div>{{ c.email }}</div>
-                <div>Joined {{ formatDate(c.joinedDate) }}</div>
-            </div>
-        </div>
-
-        <div class="stats-row">
-            <div class="stat-card">
-                <div class="stat-label">Total orders</div>
-                <div class="stat-value">{{ c.totalOrders }}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Total spent</div>
-                <div class="stat-value">{{ formatCurrency(c.totalSpent) }}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Avg. order</div>
-                <div class="stat-value">{{ formatCurrency(selectedAvgOrderValue()) }}</div>
-            </div>
-        </div>
-
-        <div class="table-card">
-            <div class="table-card-title">Order history</div>
-            <div class="order-head">
-                <span>Order</span>
-                <span>Date</span>
-                <span>Items</span>
-                <span>Total</span>
-                <span>Status</span>
-            </div>
-
-            @if (selectedCustomerOrders().length === 0) {
-                <div class="state-row">No orders yet.</div>
-            }
-
-            @for (o of selectedCustomerOrders(); track o.id) {
-                <div class="order-row">
-                    <span class="order-id">{{ o.id }}</span>
-                    <span class="muted">{{ formatDate(o.date) }}</span>
-                    <span class="muted">{{ o.items.length }}</span>
-                    <span class="amount">{{ formatCurrency(o.total) }}</span>
-                    <span>
-            <span class="pill" [class.pill-active]="o.status === 'delivered'">
-              {{ o.status }}
+        @if (detailLoading()) {
+            <div class="state-row">Loading customer…</div>
+        } @else {
+            <div class="profile-card">
+                <div class="profile-main">
+                    <div class="avatar avatar-lg">{{ c.initials }}</div>
+                    <div>
+                        <h2>{{ c.name }}</h2>
+                        <span class="pill" [class.pill-active]="c.status === 'active'">
+              {{ getStatusLabel(c.status) }}
             </span>
-          </span>
+                    </div>
                 </div>
-            }
-        </div>
+
+                <div class="profile-details">
+                    <div>{{ c.email }}</div>
+                    <div>Joined {{ formatDate(c.joinedDate) }}</div>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">Total orders</div>
+                    <div class="stat-value">{{ c.totalOrders }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total spent</div>
+                    <div class="stat-value">{{ formatCurrency(c.totalSpent) }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg. order</div>
+                    <div class="stat-value">{{ formatCurrency(selectedAvgOrderValue()) }}</div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="table-card-title">Order history</div>
+                <div class="order-head order-head-4col">
+                    <span>Order</span>
+                    <span>Date</span>
+                    <span>Total</span>
+                    <span>Status</span>
+                </div>
+
+                @if (selectedCustomerOrders().length === 0) {
+                    <div class="state-row">No orders yet.</div>
+                }
+
+                @for (o of selectedCustomerOrders(); track o.orderNumber) {
+                    <div class="order-row order-row-4col">
+                        <span class="order-id">{{ o.orderNumber }}</span>
+                        <span class="muted">{{ formatDate(o.orderDate) }}</span>
+                        <span class="amount">{{ formatCurrency(o.total) }}</span>
+                        <span>
+              <span class="pill" [class.pill-active]="o.status.toUpperCase() === 'DELIVERED'">
+                {{ getOrderStatusLabel(o.status) }}
+              </span>
+            </span>
+                    </div>
+                }
+            </div>
+        }
     </div>
 }
