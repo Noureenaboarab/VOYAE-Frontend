@@ -47,8 +47,11 @@ export interface CartResponse {
 }
 
 export interface OrderItem {
+  id?:       number;
   productId: string;
   name:      string;
+  type?:     string;
+  imageUrl?: string;
   quantity:  number;
   price:     number;
 }
@@ -59,6 +62,37 @@ export interface Order {
   items:  OrderItem[];
   status: 'processing' | 'shipped' | 'delivered' | 'returned';
   total:  number;
+  paymentStatus?: string;
+}
+
+export interface BackendOrderProduct {
+  id:           number;
+  name:         string;
+  description?: string;
+  basePrice:    number | string;
+  discount?:    number | string;
+  categoryId?:   number;
+  categoryName?: string;
+  imageUrl?:     string | null;
+  inStock?:      boolean;
+  quantity?:     number;
+  createdAt?:    string;
+}
+
+export interface BackendOrderItem {
+  id:              number;
+  priceAtPurchase: number | string;
+  product:         BackendOrderProduct;
+  quantity:        number;
+}
+
+export interface BackendOrder {
+  id:            number;
+  createdAt:     string;
+  items:         BackendOrderItem[];
+  paymentStatus: string;
+  status:        string;
+  totalAmount:   number | string;
 }
 
 export interface UserProfile {

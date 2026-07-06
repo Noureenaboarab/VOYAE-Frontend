@@ -155,6 +155,12 @@
     font-size: var(--text-sm);
   }
 
+  &__total {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-ink);
+  }
+
   &__actions {
     display: flex;
     align-items: center;
@@ -172,6 +178,17 @@
     &--shipped    { color: var(--color-terra); }
     &--processing { color: var(--color-stone); }
     &--returned   { color: var(--color-error); }
+  }
+}
+
+.orders-state {
+  padding-block: var(--space-4);
+  border-bottom: var(--border-thin);
+  font-size: var(--text-sm);
+  color: var(--color-stone);
+
+  &--error {
+    color: var(--color-error);
   }
 }
 

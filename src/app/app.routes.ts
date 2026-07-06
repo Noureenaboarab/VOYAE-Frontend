@@ -81,6 +81,13 @@ export const routes: Routes = [
     title: 'Order Confirmed – VOYAE',
   },
   {
+    path: 'account/orders/:id',
+    loadComponent: () =>
+        import('./features/account/order-details/order-detail.component').then(m => m.OrderDetailComponent),
+    canActivate: [authGuard],
+    title: 'Order Details - VOYAE',
+  },
+  {
     path: 'account',
     loadComponent: () =>
         import('./features/account/account.component').then(m => m.AccountComponent),
