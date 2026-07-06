@@ -97,6 +97,16 @@ export interface UserProfile {
   memberSince: string;
 }
 
+export interface Address {
+  id: number;
+  label: string;
+  street: string;
+  city: string;
+  country: string;
+  postalCode: string;
+  isDefault: boolean;
+}
+
 export interface ShippingOption {
   id:          string;
   label:       string;

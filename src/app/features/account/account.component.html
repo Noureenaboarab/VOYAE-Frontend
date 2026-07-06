@@ -223,6 +223,64 @@
             </div>
           }
 
+          <!-- ADDRESSES -->
+          @case ('addresses') {
+            <div class="account-content-block">
+              <div class="account-content-block__header">
+                <div>
+                  <h1 class="account-content-block__title">Addresses</h1>
+                  <p class="account-content-block__subtitle">
+                    Saved shipping addresses for this account.
+                  </p>
+                </div>
+              </div>
+
+              @if (addressesLoading()) {
+                <p class="orders-state">Loading addresses...</p>
+              } @else if (addressesError()) {
+                <p class="orders-state orders-state--error">{{ addressesError() }}</p>
+              } @else if (addresses().length === 0) {
+                <p class="orders-state">No saved addresses yet.</p>
+              } @else {
+                <div class="addresses-list">
+                  @for (address of addresses(); track address.id) {
+                    <article class="address-card">
+                      <div class="address-card__header">
+                        <div>
+                          <p class="address-card__label">{{ address.label }}</p>
+                          <p class="address-card__summary">{{ formatAddress(address) }}</p>
+                        </div>
+
+                        @if (address.isDefault) {
+                          <span class="address-card__badge">Default</span>
+                        }
+                      </div>
+
+                      <div class="address-card__body">
+                        <div>
+                          <span>Street</span>
+                          <strong>{{ address.street }}</strong>
+                        </div>
+                        <div>
+                          <span>City</span>
+                          <strong>{{ address.city }}</strong>
+                        </div>
+                        <div>
+                          <span>Postal code</span>
+                          <strong>{{ address.postalCode }}</strong>
+                        </div>
+                        <div>
+                          <span>Country</span>
+                          <strong>{{ address.country }}</strong>
+                        </div>
+                      </div>
+                    </article>
+                  }
+                </div>
+              }
+            </div>
+          }
+
           <!-- ORDERS -->
           @case ('orders') {
             <div class="account-content-block">
