@@ -101,42 +101,74 @@ export interface AdminOrder {
   status:   AdminOrderStatus;
 }
 
+// ============================================================
+// VOYÆ — Admin Customer Models
+// ============================================================
+
 export type AdminCustomerStatus = 'active' | 'inactive';
 export type AdminCustomerTab    = 'all' | AdminCustomerStatus;
 
-export interface AdminCustomer {
-  email:       string;
-  name:        string;
-  initials:    string;
-  joinedDate:  string; // ISO
-  totalOrders: number;
-  totalSpent:  number;
-  status:      AdminCustomerStatus;
+// ── Raw backend shapes (must match Java DTOs exactly) ───────
+
+export interface UserSummaryResponse {
+  id:    number;
+  name:  string;
+  email: string;
 }
 
-// Richer shape returned by GET /api/admin/users/{id} on the real
-// backend (AdminCustomerHttpService). orderNumber/orderDate/etc.
-// are still placeholders pending the real Order entity fields.
+export interface OrderSummaryResponse {
+  id:          number;
+  totalAmount: number;
+  status:      string;   // Order.Status enum, serialized as its name e.g. "DELIVERED"
+  createdAt:   string;   // LocalDateTime -> ISO string over the wire
+}
+
+export interface UserProfileResponse {
+  id:        number;
+  name:      string;
+  email:     string;
+  birthday:  string | null;
+  job:       string | null;
+  role:      string;
+  gender:    string;
+  createdAt: string;
+  orders:    OrderSummaryResponse[];
+}
+
+// ── View-model shapes used by the UI ────────────────────────
+
+// List row — only fields GET /api/admin/users can actually supply.
+export interface AdminCustomer {
+  id:       number;
+  email:    string;
+  name:     string;
+  initials: string;
+  status:   AdminCustomerStatus; // client-side placeholder — no backend field yet
+}
+
 export interface AdminCustomerOrderSummary {
   orderNumber: string;
   orderDate:   string;
-  itemCount:   number;
   total:       number;
   status:      string;
+  // itemCount intentionally omitted — OrderSummaryResponse has no line-item data
 }
 
+// Detail — fields from GET /api/admin/users/{id}, plus totals
+// derived client-side from the embedded orders array.
 export interface AdminCustomerDetail extends AdminCustomer {
-  job?:       string | null;
-  addresses?: { city: string; country: string }[];
-  orders:     AdminCustomerOrderSummary[];
+  job?:        string | null;
+  joinedDate:  string;
+  totalOrders: number;
+  totalSpent:  number;
+  orders:      AdminCustomerOrderSummary[];
+  // addresses intentionally omitted — no address data exists in the backend
 }
 
-//  Generic paging wrapper
-// Matches Spring Data's Page<T> JSON shape.
 export interface Page<T> {
   content:       T[];
   totalElements: number;
   totalPages:    number;
-  number:        number; // current page, 0-indexed
+  number:        number;
   size:          number;
 }

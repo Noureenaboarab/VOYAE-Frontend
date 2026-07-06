@@ -3,7 +3,7 @@
 // ============================================================
 import { Component, inject, signal, computed } from '@angular/core';
 import { AdminCustomerService } from '../../../core/services/admin-customer.service';
-import { AdminCustomerTab } from '../../../core/models/admin.models';
+import { AdminCustomerTab, AdminCustomerDetail } from '../../../core/models/admin.models';
 
 @Component({
     selector: 'voy-admin-customers',
@@ -15,28 +15,41 @@ import { AdminCustomerTab } from '../../../core/models/admin.models';
 export class AdminCustomersComponent {
     private service = inject(AdminCustomerService);
 
-    // ── Tab counts ───────────────────────────────────────────
-    readonly totalCount    = this.service.totalCount;
-    readonly activeCount   = this.service.activeCount;
-    readonly inactiveCount = this.service.inactiveCount;
-
     // ── Local state ──────────────────────────────────────────
-    readonly activeTab     = signal<AdminCustomerTab>('all');
-    readonly searchQuery   = signal('');
-    readonly currentPage   = signal(1);
-    readonly selectedEmail = signal<string | null>(null); // null = list view
-    readonly PAGE_SIZE     = 8;
+    readonly searchQuery = signal('');
+    readonly currentPage = signal(1);
+    readonly selectedId  = signal<number | null>(null); // null = list view
+    readonly PAGE_SIZE   = 8;
+
+    // Detail is fetched on demand — the service doesn't cache it,
+    // it just returns a Promise per call, so it's held here.
+    private readonly _selectedDetail = signal<AdminCustomerDetail | null>(null);
+    private readonly _detailLoading  = signal(false);
+
+    readonly selectedCustomer = this._selectedDetail.asReadonly();
+    readonly detailLoading    = this._detailLoading.asReadonly();
+
+    constructor() {
+        this.service.loadCustomers();
+    }
+
+    // ── Tab state / counts ────────────────────────────────────
+    readonly activeTab = this.service.activeTab;
+
+    readonly totalCount = computed(() => this.service.customers().length);
+
+    readonly activeCount = computed(() =>
+        this.service.customers().filter(c => c.status === 'active').length
+    );
+
+    readonly inactiveCount = computed(() =>
+        this.service.customers().filter(c => c.status === 'inactive').length
+    );
 
     // ── Derived: list view ────────────────────────────────────
     readonly filteredCustomers = computed(() => {
-        const tab = this.activeTab();
-        const q   = this.searchQuery().toLowerCase().trim();
-
-        let items = this.service.customers();
-
-        if (tab !== 'all') {
-            items = items.filter(c => c.status === tab);
-        }
+        const q = this.searchQuery().toLowerCase().trim();
+        let items = this.service.filteredCustomers();
 
         if (q) {
             items = items.filter(c =>
@@ -66,30 +79,19 @@ export class AdminCustomersComponent {
     readonly showingCount = computed(() => this.paginatedCustomers().length);
 
     // ── Derived: detail view ──────────────────────────────────
-    // Profile + stats only — this simplified service doesn't carry
-    // per-order line items, only the pre-aggregated totalOrders/
-    // totalSpent already on each AdminCustomer.
-    readonly selectedCustomer = computed(() => {
-        const email = this.selectedEmail();
-        if (!email) return null;
-        return this.service.getByEmail(email) ?? null;
-    });
-
-    readonly selectedCustomerOrders = computed(() => {
-        const email = this.selectedEmail();
-        if (!email) return [];
-        return this.service.getOrdersFor(email);
-    });
+    readonly selectedCustomerOrders = computed(() =>
+        this._selectedDetail()?.orders ?? []
+    );
 
     readonly selectedAvgOrderValue = computed(() => {
-        const customer = this.selectedCustomer();
+        const customer = this._selectedDetail();
         if (!customer || customer.totalOrders === 0) return 0;
         return customer.totalSpent / customer.totalOrders;
     });
 
     // ── Tab / search / pagination ────────────────────────────
     setTab(tab: AdminCustomerTab): void {
-        this.activeTab.set(tab);
+        this.service.setTab(tab);
         this.currentPage.set(1);
     }
 
@@ -104,16 +106,30 @@ export class AdminCustomersComponent {
     }
 
     // ── List <-> detail navigation ────────────────────────────
-    selectCustomer(email: string): void {
-        this.selectedEmail.set(email);
+    async selectCustomer(id: number): Promise<void> {
+        this.selectedId.set(id);
+        this._selectedDetail.set(null);
+        this._detailLoading.set(true);
+        try {
+            const detail = await this.service.loadCustomerDetail(id);
+            if (this.selectedId() === id) {
+                this._selectedDetail.set(detail);
+            }
+        } finally {
+            if (this.selectedId() === id) {
+                this._detailLoading.set(false);
+            }
+        }
     }
 
     backToList(): void {
-        this.selectedEmail.set(null);
+        this.selectedId.set(null);
+        this._selectedDetail.set(null);
     }
 
     // ── Display helpers ────────────────────────────────────────
     formatDate(isoString: string): string {
+        if (!isoString) return '—';
         return new Date(isoString).toLocaleDateString('en-US', {
             month: 'short', day: 'numeric', year: 'numeric',
         });
@@ -125,5 +141,10 @@ export class AdminCustomersComponent {
 
     getStatusLabel(status: string): string {
         return status === 'active' ? 'Active' : 'Inactive';
+    }
+
+    getOrderStatusLabel(status: string): string {
+        const s = status.toUpperCase();
+        return s.charAt(0) + s.slice(1).toLowerCase();
     }
 }
