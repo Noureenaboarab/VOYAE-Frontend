@@ -1,91 +1,132 @@
 // ============================================================
 // VOYÆ — Admin Order Service
-// Mock data (32 orders) — swap signal initializer for HTTP call when ready
 // ============================================================
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { AdminOrder, AdminOrderItem, AdminOrderStatus } from '../models/admin.models';
 
-// ── Helpers ──────────────────────────────────────────────────
-function customer(name: string, email: string) {
-  return { name, email, initials: name.split(' ').map((p: string) => p[0]).join('').toUpperCase() };
+// ── Actual backend response shape (from AdminOrderResponse.java) ──
+interface ProductResponse {
+  id: number;
+  name: string;
+  color?: string;   // ⚠️ confirm this field exists on ProductResponse — guessing
+  [key: string]: unknown;
 }
 
-function item(productId: string, name: string, color: string, quantity: number, price: number): AdminOrderItem {
-  return { productId, name, color, quantity, price };
+interface OrderItemResponse {
+  id: number;
+  product: ProductResponse;
+  quantity: number;
+  priceAtPurchase: number;
 }
 
-function order(
-  id: string, date: string,
-  cName: string, cEmail: string,
-  items: AdminOrderItem[],
-  status: AdminOrderStatus,
-): AdminOrder {
-  return {
-    id, date,
-    customer: customer(cName, cEmail),
-    items,
-    total: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
-    status,
-  };
+interface CustomerSummary {
+  id: number;
+  name: string;
+  email: string;
 }
 
-// ── Mock data ────────────────────────────────────────────────
-// Distribution: 8 processing · 12 shipped · 10 delivered · 2 returned = 32
-const MOCK_ORDERS: AdminOrder[] = [
-  // ── Processing (8) ──────────────────────────────────────
-  order('#VOY-1042','2024-06-28T14:22:00Z','Sophie Laurent',  'sophie.l@example.com',  [item('1','The Carry-On','Desert Sand',1,295),item('4','The Check-In','Desert Sand',1,395)], 'processing'),
-  order('#VOY-1041','2024-06-27T09:15:00Z','Marc Dupont',     'marc.d@example.com',    [item('2','The Carry-On','Obsidian Black',1,295)],                                           'processing'),
-  order('#VOY-1040','2024-06-26T16:48:00Z','Alex Chen',       'alex.c@example.com',    [item('7','The Large','Forest Green',1,445),item('1','The Carry-On','Desert Sand',1,295)],   'processing'),
-  order('#VOY-1039','2024-06-25T11:30:00Z','Emma Wilson',     'emma.w@example.com',    [item('5','The Check-In','Slate Grey',1,395)],                                               'processing'),
-  order('#VOY-1038','2024-06-24T08:55:00Z','James Rodriguez', 'james.r@example.com',   [item('3','The Carry-On','Chalk White',2,295)],                                              'processing'),
-  order('#VOY-1037','2024-06-23T13:20:00Z','Isabelle Moreau', 'i.moreau@example.com',  [item('18','The Large','Navy Blue',1,445)],                                                  'processing'),
-  order('#VOY-1036','2024-06-22T15:40:00Z','Lucas Martin',    'lucas.m@example.com',   [item('13','The Check-In','Obsidian Black',1,395),item('3','The Carry-On','Chalk White',1,295)], 'processing'),
-  order('#VOY-1035','2024-06-21T10:05:00Z','Charlotte Brown', 'c.brown@example.com',   [item('7','The Large','Forest Green',1,445)],                                                'processing'),
+interface OrderResponse {
+  id: number;
+  customer: CustomerSummary;
+  totalAmount: number;
+  status: string;          // e.g. "PROCESSING" — Java enum name, uppercase
+  items: OrderItemResponse[];
+  paymentStatus: string;
+  createdAt: string;       // LocalDateTime serializes as ISO string
+}
 
-  // ── Shipped (12) ────────────────────────────────────────
-  order('#VOY-1034','2024-06-20T09:30:00Z','Noah Thompson',   'n.thompson@example.com',[item('1','The Carry-On','Desert Sand',1,295),item('7','The Large','Forest Green',1,445)],   'shipped'),
-  order('#VOY-1033','2024-06-19T14:15:00Z','Olivia Park',     'olivia.p@example.com',  [item('5','The Check-In','Slate Grey',1,395)],                                               'shipped'),
-  order('#VOY-1032','2024-06-18T11:22:00Z','Ethan Davis',     'ethan.d@example.com',   [item('2','The Carry-On','Obsidian Black',1,295)],                                           'shipped'),
-  order('#VOY-1031','2024-06-17T08:44:00Z','Ava Taylor',      'ava.t@example.com',     [item('18','The Large','Navy Blue',1,445),item('4','The Check-In','Desert Sand',1,395)],     'shipped'),
-  order('#VOY-1030','2024-06-16T16:30:00Z','Liam Anderson',   'liam.a@example.com',    [item('3','The Carry-On','Chalk White',1,295)],                                              'shipped'),
-  order('#VOY-1029','2024-06-15T12:10:00Z','Mia Johnson',     'mia.j@example.com',     [item('7','The Large','Forest Green',1,445)],                                                'shipped'),
-  order('#VOY-1028','2024-06-14T09:55:00Z','Benjamin Lee',    'ben.l@example.com',     [item('1','The Carry-On','Desert Sand',1,295),item('5','The Check-In','Slate Grey',1,395)],  'shipped'),
-  order('#VOY-1027','2024-06-13T15:20:00Z','Amelia Scott',    'amelia.s@example.com',  [item('2','The Carry-On','Obsidian Black',1,295)],                                           'shipped'),
-  order('#VOY-1026','2024-06-12T10:45:00Z','Henry Wilson',    'henry.w@example.com',   [item('18','The Large','Navy Blue',1,445)],                                                  'shipped'),
-  order('#VOY-1025','2024-06-11T08:30:00Z','Harper Martinez', 'harper.m@example.com',  [item('4','The Check-In','Desert Sand',1,395),item('3','The Carry-On','Chalk White',1,295)], 'shipped'),
-  order('#VOY-1024','2024-06-10T14:00:00Z','Sebastian Clark', 'seb.c@example.com',     [item('7','The Large','Forest Green',1,445)],                                                'shipped'),
-  order('#VOY-1023','2024-06-09T11:15:00Z','Ella Robinson',   'ella.r@example.com',    [item('1','The Carry-On','Desert Sand',1,295)],                                              'shipped'),
-
-  // ── Delivered (10) ──────────────────────────────────────
-  order('#VOY-1022','2024-06-08T09:00:00Z','Jackson Lewis',   'jackson.l@example.com', [item('2','The Carry-On','Obsidian Black',1,295),item('18','The Large','Navy Blue',1,445)],  'delivered'),
-  order('#VOY-1021','2024-06-07T15:30:00Z','Luna Walker',     'luna.w@example.com',    [item('5','The Check-In','Slate Grey',1,395)],                                               'delivered'),
-  order('#VOY-1020','2024-06-06T12:45:00Z','Aiden Hall',      'aiden.h@example.com',   [item('7','The Large','Forest Green',1,445)],                                                'delivered'),
-  order('#VOY-1019','2024-06-05T08:20:00Z','Scarlett Young',  'scarlett.y@example.com',[item('3','The Carry-On','Chalk White',1,295),item('4','The Check-In','Desert Sand',1,395)], 'delivered'),
-  order('#VOY-1018','2024-06-04T14:10:00Z','Caleb Allen',     'caleb.a@example.com',   [item('1','The Carry-On','Desert Sand',1,295)],                                              'delivered'),
-  order('#VOY-1017','2024-06-03T10:30:00Z','Victoria King',   'victoria.k@example.com',[item('18','The Large','Navy Blue',1,445)],                                                  'delivered'),
-  order('#VOY-1016','2024-06-02T09:15:00Z','Mateo Wright',    'mateo.w@example.com',   [item('2','The Carry-On','Obsidian Black',1,295)],                                           'delivered'),
-  order('#VOY-1015','2024-06-01T16:00:00Z','Aria Lopez',      'aria.l@example.com',    [item('5','The Check-In','Slate Grey',1,395),item('7','The Large','Forest Green',1,445)],    'delivered'),
-  order('#VOY-1014','2024-05-31T11:30:00Z','Owen Hill',       'owen.h@example.com',    [item('3','The Carry-On','Chalk White',1,295)],                                              'delivered'),
-  order('#VOY-1013','2024-05-30T08:45:00Z','Layla Green',     'layla.g@example.com',   [item('4','The Check-In','Desert Sand',1,395)],                                              'delivered'),
-
-  // ── Returned (2) ────────────────────────────────────────
-  order('#VOY-1012','2024-05-29T14:20:00Z','Ryan Adams',      'ryan.a@example.com',    [item('1','The Carry-On','Desert Sand',1,295)],                                              'returned'),
-  order('#VOY-1011','2024-05-28T10:10:00Z','Zoe Baker',       'zoe.b@example.com',     [item('7','The Large','Forest Green',1,445)],                                                'returned'),
-];
-
-// ── Service ──────────────────────────────────────────────────
 @Injectable({ providedIn: 'root' })
 export class AdminOrderService {
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = `${environment.apiUrl}/admin/orders`;
 
-  readonly orders = signal<AdminOrder[]>([...MOCK_ORDERS]);
+  private readonly _orders  = signal<AdminOrder[]>([]);
+  private readonly _loading = signal(false);
+  private readonly _error   = signal<string | null>(null);
 
-  readonly totalCount      = computed(() => this.orders().length);
-  readonly processingCount = computed(() => this.orders().filter(o => o.status === 'processing').length);
-  readonly shippedCount    = computed(() => this.orders().filter(o => o.status === 'shipped').length);
-  readonly deliveredCount  = computed(() => this.orders().filter(o => o.status === 'delivered').length);
-  readonly returnedCount   = computed(() => this.orders().filter(o => o.status === 'returned').length);
+  readonly orders  = this._orders.asReadonly();
+  readonly loading = this._loading.asReadonly();
+  readonly error   = this._error.asReadonly();
 
-  updateStatus(id: string, status: AdminOrderStatus): void {
-    this.orders.update(os => os.map(o => o.id === id ? { ...o, status } : o));
+  readonly totalCount      = computed(() => this._orders().length);
+  readonly processingCount = computed(() => this._orders().filter(o => o.status === 'processing').length);
+  readonly shippedCount    = computed(() => this._orders().filter(o => o.status === 'shipped').length);
+  readonly deliveredCount  = computed(() => this._orders().filter(o => o.status === 'delivered').length);
+  readonly returnedCount   = computed(() => this._orders().filter(o => o.status === 'returned').length);
+
+  async loadOrders(): Promise<void> {
+    this._loading.set(true);
+    this._error.set(null);
+    try {
+      const response = await firstValueFrom(
+          this.http.get<OrderResponse[]>(this.baseUrl)
+      );
+
+      const orders: AdminOrder[] = response.map(o => this.mapToAdminOrder(o));
+      this._orders.set(orders);
+    } catch (err) {
+      this._error.set('Failed to load orders. Please try again.');
+      throw err;
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  async updateStatus(id: string, status: AdminOrderStatus): Promise<void> {
+    const previous = this._orders();
+    this._orders.update(os => os.map(o => o.id === id ? { ...o, status } : o));
+
+    try {
+      const numericId = this.stripHash(id);
+      // ⚠️ Backend enum is uppercase — confirm OrderStatusUpdateRequest's field name too
+      await firstValueFrom(
+          this.http.patch(`${this.baseUrl}/${numericId}/status`, {
+            status: status.toUpperCase(),
+          })
+      );
+    } catch (err) {
+      this._orders.set(previous);
+      this._error.set('Failed to update order status.');
+      throw err;
+    }
+  }
+
+  private mapToAdminOrder(o: OrderResponse): AdminOrder {
+    const items: AdminOrderItem[] = o.items.map(i => ({
+      productId: String(i.product.id),
+      name: i.product.name,
+      color: i.product.color ?? '—', // ⚠️ placeholder if ProductResponse has no color field
+      quantity: i.quantity,
+      price: i.priceAtPurchase,
+    }));
+
+    return {
+      id: `#VOY-${o.id}`,
+      date: o.createdAt,
+      customer: {
+        name: o.customer.name,
+        email: o.customer.email,
+        initials: this.getInitials(o.customer.name),
+      },
+      items,
+      total: o.totalAmount,
+      status: o.status.toLowerCase() as AdminOrderStatus,
+    };
+  }
+
+  private getInitials(name: string): string {
+    return name
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(part => part[0]?.toUpperCase() ?? '')
+        .join('');
+  }
+
+  private stripHash(id: string): string {
+    return id.replace(/^#/, '').replace(/^VOY-/, '');
   }
 }

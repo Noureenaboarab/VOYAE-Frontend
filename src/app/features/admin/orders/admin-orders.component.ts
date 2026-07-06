@@ -1,7 +1,7 @@
 // ============================================================
 // VOYÆ — Admin Orders Page
 // ============================================================
-import { Component, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, inject, signal, computed, HostListener, OnInit } from '@angular/core';
 import { AdminOrderService } from '../../../core/services/admin-order.service';
 import { AdminOrder, AdminOrderStatus, AdminOrderTab } from '../../../core/models/admin.models';
 
@@ -12,8 +12,12 @@ import { AdminOrder, AdminOrderStatus, AdminOrderTab } from '../../../core/model
   templateUrl: './admin-orders.component.html',
   styleUrl: './admin-orders.component.scss',
 })
-export class AdminOrdersComponent {
+export class AdminOrdersComponent implements OnInit {
   private service = inject(AdminOrderService);
+
+  // ── Backend state ────────────────────────────────────────
+  readonly loading = this.service.loading;
+  readonly error   = this.service.error;
 
   // ── Tab counts ───────────────────────────────────────────
   readonly totalCount      = this.service.totalCount;
@@ -29,6 +33,10 @@ export class AdminOrdersComponent {
   readonly activeDropdown  = signal<string | null>(null);  // status dropdown
   readonly expandedOrderId = signal<string | null>(null);  // detail panel
   readonly PAGE_SIZE       = 8;
+
+  ngOnInit(): void {
+    this.service.loadOrders();
+  }
 
   // ── Derived ──────────────────────────────────────────────
   readonly filteredOrders = computed(() => {
@@ -106,7 +114,9 @@ export class AdminOrdersComponent {
 
   changeStatus(orderId: string, status: AdminOrderStatus, event: MouseEvent): void {
     event.stopPropagation();
-    this.service.updateStatus(orderId, status);
+    this.service.updateStatus(orderId, status).catch(() => {
+      // service.error signal is already set; template can surface it
+    });
     this.activeDropdown.set(null);
   }
 
