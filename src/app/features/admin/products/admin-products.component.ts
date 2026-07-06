@@ -1,7 +1,7 @@
 // ============================================================
 // VOYÆ — Admin Products Page
 // ============================================================
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { AdminProductService } from '../../../core/services/admin-product.service';
 import { AdminProduct, AdminProductTab } from '../../../core/models/admin.models';
 import { AddProductModalComponent } from './add-product-modal/add-product-modal.component';
@@ -13,15 +13,20 @@ import { AddProductModalComponent } from './add-product-modal/add-product-modal.
   templateUrl: './admin-products.component.html',
   styleUrl: './admin-products.component.scss',
 })
-export class AdminProductsComponent {
-  constructor() { console.log('✅ AdminProductsComponent mounted'); }
+export class AdminProductsComponent implements OnInit {
   private service = inject(AdminProductService);
 
-  // ── Service-derived counts (all products, unfiltered) ───
+  ngOnInit(): void {
+    this.service.loadProducts().subscribe();
+  }
+
+  // ── Service-derived state ───────────────────────────────
   readonly totalCount      = this.service.totalCount;
   readonly activeCount     = this.service.activeCount;
   readonly lowStockCount   = this.service.lowStockCount;
   readonly outOfStockCount = this.service.outOfStockCount;
+  readonly loading         = this.service.loading;
+  readonly loadError       = this.service.error;
 
   // ── Local filter / pagination state ─────────────────────
   readonly activeTab      = signal<AdminProductTab>('all');
@@ -49,18 +54,17 @@ export class AdminProductsComponent {
       items = items.filter(p => p.status === tab);
     }
 
-    // Full-text search: name, color, SKU
+    // Full-text search: name, color
     if (q) {
       items = items.filter(p =>
-        p.name.toLowerCase().includes(q)  ||
-        p.color.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q)
+          p.baseName.toLowerCase().includes(q) ||
+          p.color.toLowerCase().includes(q)
       );
     }
 
     // Category dropdown
     if (cat) {
-      items = items.filter(p => p.type === cat);
+      items = items.filter(p => p.baseName === cat);
     }
 
     // Status dropdown (stacks on top of tab filter)
@@ -74,11 +78,11 @@ export class AdminProductsComponent {
   readonly filteredCount = computed(() => this.filteredProducts().length);
 
   readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filteredCount() / this.PAGE_SIZE))
+      Math.max(1, Math.ceil(this.filteredCount() / this.PAGE_SIZE))
   );
 
   readonly pages = computed(() =>
-    Array.from({ length: this.totalPages() }, (_, i) => i + 1)
+      Array.from({ length: this.totalPages() }, (_, i) => i + 1)
   );
 
   readonly paginatedProducts = computed(() => {
@@ -135,7 +139,9 @@ export class AdminProductsComponent {
   // ── Delete ───────────────────────────────────────────────
   deleteProduct(id: string): void {
     if (!confirm('Remove this product? This cannot be undone.')) return;
-    this.service.deleteProduct(id);
+    this.service.deleteProduct(id).subscribe({
+      error: () => alert('Failed to delete product. Please try again.'),
+    });
   }
 
   // ── Display helpers ──────────────────────────────────────
@@ -148,13 +154,5 @@ export class AdminProductsComponent {
     return map[status] ?? status;
   }
 
-  getBadgeLabel(badge: string | null): string {
-    const map: Record<string, string> = {
-      'bestseller': 'Bestseller',
-      'new':        'New',
-    };
-    return badge ? (map[badge] ?? badge) : '—';
-  }
-
-  readonly categories = ['The Carry-On', 'The Check-In', 'The Large'];
+  readonly categories = this.service.categoryOptions;
 }

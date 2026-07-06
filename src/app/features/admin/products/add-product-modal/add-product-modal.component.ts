@@ -3,11 +3,11 @@
 // ============================================================
 import {
   Component, Input, Output, EventEmitter,
-  OnInit, HostListener, inject,
+  OnInit, HostListener, inject, signal,
 } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { AdminProductService } from '../../../../core/services/admin-product.service';
-import { AdminProduct, AdminProductStatus, AdminProductBadge } from '../../../../core/models/admin.models';
+import { AdminProductService, joinName } from '../../../../core/services/admin-product.service';
+import { AdminProduct } from '../../../../core/models/admin.models';
 
 @Component({
   selector: 'voy-add-product-modal',
@@ -24,19 +24,17 @@ export class AddProductModalComponent implements OnInit {
 
   isEditMode = false;
   submitted  = false;
+  saving     = signal(false);
+  saveError  = signal<string | null>(null);
 
-  categories = ['The Carry-On', 'The Check-In', 'The Large'];
+  categories = this.service.categoryOptions;
 
   formData = {
-    name:        '',
-    color:       '',
     type:        '',
-    sku:         '',
+    color:       '',
     price:       null as number | null,
     discount:    0,
     stock:       null as number | null,
-    status:      'active' as AdminProductStatus,
-    badge:       null as AdminProductBadge,
     imageUrl:    '',
     description: '',
   };
@@ -46,15 +44,11 @@ export class AddProductModalComponent implements OnInit {
     if (this.product) {
       this.isEditMode = true;
       this.formData = {
-        name:        this.product.name,
+        type:        this.product.baseName,
         color:       this.product.color,
-        type:        this.product.type,
-        sku:         this.product.sku,
         price:       this.product.price,
         discount:    this.product.discount,
         stock:       this.product.stock,
-        status:      this.product.status,
-        badge:       this.product.badge,
         imageUrl:    this.product.imageUrl,
         description: this.product.description,
       };
@@ -71,63 +65,49 @@ export class AddProductModalComponent implements OnInit {
     }
   }
 
-  // ── SKU auto-generation ──────────────────────────────────
-  private readonly TYPE_CODES: Record<string, string> = {
-    'The Carry-On': 'CO',
-    'The Check-In': 'CI',
-    'The Large':    'LG',
-  };
-
-  generateSku(): void {
-    const typeCode  = this.TYPE_CODES[this.formData.type] ?? '';
-    const colorCode = this.formData.color
-      .split(' ')
-      .map(w => w[0]?.toUpperCase() ?? '')
-      .join('');
-    this.formData.sku = typeCode && colorCode ? `VY-${typeCode}-${colorCode}` : '';
-  }
-
-  onTypeChange():  void { this.generateSku(); }
-  onColorChange(): void { this.generateSku(); }
-
   // ── Submit ───────────────────────────────────────────────
   onSubmit(form: NgForm): void {
     this.submitted = true;
     if (form.invalid) return;
 
+    const name = joinName(this.formData.type, this.formData.color);
+    const categoryId = this.service.getCategoryId(this.formData.type);
+
+    this.saving.set(true);
+    this.saveError.set(null);
+
     if (this.isEditMode && this.product) {
-      this.service.updateProduct({
-        ...this.product,
-        name:        this.formData.name,
-        color:       this.formData.color,
-        type:        this.formData.type,
-        sku:         this.formData.sku,
-        price:       this.formData.price ?? 0,
-        discount:    this.formData.discount,
-        stock:       this.formData.stock,
-        status:      this.formData.status,
-        badge:       this.formData.badge,
-        imageUrl:    this.formData.imageUrl,
+      this.service.updateProduct(this.product.id, {
+        name,
         description: this.formData.description,
+        basePrice:   this.formData.price ?? 0,
+        discount:    this.formData.discount,
+        categoryId,
+        imageUrl:    this.formData.imageUrl,
+        quantity:    this.formData.stock ?? 0,
+      }).subscribe({
+        next: () => { this.saving.set(false); this.close.emit(); },
+        error: () => {
+          this.saving.set(false);
+          this.saveError.set('Failed to save changes. Please try again.');
+        },
       });
     } else {
       this.service.addProduct({
-        id:          Date.now().toString(),
-        name:        this.formData.name,
-        color:       this.formData.color,
-        type:        this.formData.type,
-        sku:         this.formData.sku,
-        price:       this.formData.price ?? 0,
-        discount:    this.formData.discount,
-        stock:       this.formData.stock,
-        status:      this.formData.status,
-        badge:       this.formData.badge,
-        imageUrl:    this.formData.imageUrl,
+        name,
         description: this.formData.description,
-        createdAt:   new Date().toISOString(),
+        basePrice:   this.formData.price ?? 0,
+        discount:    this.formData.discount,
+        categoryId,
+        imageUrl:    this.formData.imageUrl,
+        quantity:    this.formData.stock ?? 0,
+      }).subscribe({
+        next: () => { this.saving.set(false); this.close.emit(); },
+        error: () => {
+          this.saving.set(false);
+          this.saveError.set('Failed to create product. Please try again.');
+        },
       });
     }
-
-    this.close.emit();
   }
 }

@@ -11,20 +11,40 @@ export class AuthService {
   private router = inject(Router);
 
   readonly token = signal<string | null>(
-    localStorage.getItem(this.TOKEN_KEY)
+      localStorage.getItem(this.TOKEN_KEY)
   );
 
   readonly isAuthenticated = computed(() => this.token() !== null);
 
+  // Decoded from the JWT's `role` claim (the same claim the backend's
+  // JwtGrantedAuthoritiesConverter reads). Not verified client-side —
+  // it's only used for UI/routing decisions; the backend still enforces
+  // access on every request.
+  readonly role = computed<string | null>(() => {
+    const jwt = this.token();
+    if (!jwt) return null;
+
+    try {
+      const payloadSegment = jwt.split('.')[1];
+      const normalized = payloadSegment.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(normalized));
+      return payload.role ?? null;
+    } catch {
+      return null;
+    }
+  });
+
+  readonly isAdmin = computed(() => this.role() === 'ADMIN');
+
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>('/api/auth/login', credentials).pipe(
-      tap(res => this.setToken(res.token))
+        tap(res => this.setToken(res.token))
     );
   }
 
   register(data: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>('/api/auth/register', data).pipe(
-      tap(res => this.setToken(res.token))
+        tap(res => this.setToken(res.token))
     );
   }
 

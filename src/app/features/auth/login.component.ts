@@ -41,6 +41,15 @@ export class LoginComponent {
     this.authService.login({ email: email!, password: password! }).subscribe({
       next: () => {
         this.loading.set(false);
+        console.log(this.role())
+
+        // Admins always land on the admin dashboard, regardless of
+        // whatever page they were on before hitting /login.
+        if (this.authService.isAdmin()) {
+          this.router.navigateByUrl('/admin');
+          return;
+        }
+
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/account';
         this.router.navigateByUrl(returnUrl);
       },
