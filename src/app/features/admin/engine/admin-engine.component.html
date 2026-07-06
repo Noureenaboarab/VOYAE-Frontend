@@ -1,129 +1,43 @@
 <div class="engine-page">
-
-  <!-- Top bar -->
   <div class="engine-page__topbar">
     <div>
       <p class="eyebrow">System</p>
       <h1 class="display-md">Engine</h1>
     </div>
-    <div class="engine-page__topbar-actions">
-      @if (state() === 'idle') {
-        <button class="btn btn--terra" (click)="launch()">Launch</button>
-      }
-      @if (state() === 'complete' || state() === 'error') {
-        <button class="btn btn--secondary" (click)="reset()">Reset</button>
-        <button class="btn btn--terra" (click)="launch()">Launch Again</button>
-      }
-    </div>
   </div>
 
-  <!-- Launch panel -->
-  <div class="engine-page__panel"
-       [class.is-countdown]="state() === 'countdown'"
-       [class.is-ignition]="state() === 'ignition'"
-       [class.is-liftoff]="state() === 'liftoff'"
-       [class.is-complete]="state() === 'complete'"
-       [class.is-error]="state() === 'error'">
-
-    <!-- Stars -->
-    <div class="engine-page__stars" aria-hidden="true">
-      @for (_ of [].constructor(30); track $index) {
-        <span class="engine-page__star"
-              [style.--x]="($index * 29 + 7) % 100"
-              [style.--y]="($index * 47 + 13) % 100"
-              [style.--s]="($index % 3) + 1"></span>
-      }
+  @if (state() === 'idle') {
+    <div class="engine-page__center">
+      <button class="fuzzy-btn" (click)="launch()">
+        <span class="fuzzy-btn__label">TICK ENGINE</span>
+        <span class="fuzzy-btn__noise"></span>
+      </button>
     </div>
+  }
 
-    <!-- Countdown overlay -->
-    @if (state() === 'countdown') {
-      <div class="engine-page__countdown">
-        <span class="engine-page__countdown-num" [style.--i]="countdown()">{{ countdown() }}</span>
+  @if (state() === 'running') {
+    <div class="engine-page__center">
+      <div class="engine-page__spinner">
+        <div class="engine-page__spinner-ring"></div>
+        <span class="engine-page__spinner-label">Processing&hellip;</span>
       </div>
-    }
-
-    <!-- ===== ROCKET ===== -->
-    <div class="engine-page__rocket-area">
-      <div class="engine-page__rocket"
-           [class.is-launching]="state() === 'liftoff'"
-           [class.is-gone]="state() === 'complete' || state() === 'error'">
-        <!-- Nose -->
-        <div class="engine-page__nose"></div>
-        <!-- Body -->
-        <div class="engine-page__body">
-          <div class="engine-page__window"></div>
-          <div class="engine-page__band"></div>
-          <div class="engine-page__band engine-page__band--bottom"></div>
-        </div>
-        <!-- Fins -->
-        <div class="engine-page__fin engine-page__fin--left"></div>
-        <div class="engine-page__fin engine-page__fin--right"></div>
-        <!-- Nozzle -->
-        <div class="engine-page__nozzle"></div>
-        <!-- Fire -->
-        @if (state() === 'ignition' || state() === 'liftoff') {
-          <div class="engine-page__fire">
-            <div class="engine-page__flame engine-page__flame--1"></div>
-            <div class="engine-page__flame engine-page__flame--2"></div>
-            <div class="engine-page__flame engine-page__flame--3"></div>
-          </div>
-        }
-      </div>
-
-      <!-- Launch pad -->
-      @if (state() === 'idle' || state() === 'countdown' || state() === 'ignition') {
-        <div class="engine-page__pad"></div>
-      }
-
-      <!-- Smoke -->
-      @if (state() === 'ignition' || state() === 'liftoff') {
-        <div class="engine-page__smoke-area">
-          <div class="engine-page__smoke-puff"></div>
-          <div class="engine-page__smoke-puff engine-page__smoke-puff--2"></div>
-          <div class="engine-page__smoke-puff engine-page__smoke-puff--3"></div>
-        </div>
-      }
     </div>
+  }
 
-    <!-- Status text -->
-    <div class="engine-page__status">
-      @switch (state()) {
-        @case ('idle')    { <span>Engine Standby</span> }
-        @case ('countdown') { <span>T-Minus {{ countdown() }}</span> }
-        @case ('ignition')  { <span>Ignition Sequence</span> }
-        @case ('liftoff')   { <span>Liftoff!</span> }
-        @case ('complete')  { <span class="engine-page__status--ok">Engine Tick Complete</span> }
-        @case ('error')     { <span class="engine-page__status--err">{{ errorMessage() }}</span> }
-      }
-    </div>
-
-    <!-- Results -->
-    @if (state() === 'complete' || state() === 'error') {
-      <div class="engine-page__results">
-        <div class="engine-page__result">
-          <span class="engine-page__result-label">Status</span>
-          <span class="engine-page__result-value"
-                [class.is-ok]="state() === 'complete'"
-                [class.is-err]="state() === 'error'">
-            {{ state() === 'complete' ? 'Success' : 'Failed' }}
-          </span>
+  @if (state() === 'complete' || state() === 'error') {
+    <div class="engine-page__center">
+      <div class="engine-page__result-box"
+           [class.is-error]="state() === 'error'">
+        <div class="engine-page__result-icon">{{ state() === 'complete' ? 'OK' : 'ERR' }}</div>
+        <div class="engine-page__result-status">
+          {{ state() === 'complete' ? 'Engine Tick Complete' : errorMessage() }}
         </div>
-        @if (state() === 'error') {
-          <div class="engine-page__result">
-            <span class="engine-page__result-label">Error</span>
-            <span class="engine-page__result-value is-err">{{ errorMessage() }}</span>
-          </div>
-        }
-        <div class="engine-page__result">
-          <span class="engine-page__result-label">Duration</span>
-          <span class="engine-page__result-value">{{ duration() }} ms</span>
+        <div class="engine-page__result-meta">
+          <span>{{ duration() }} ms</span>
+          <span>{{ completedAt() }}</span>
         </div>
-        <div class="engine-page__result">
-          <span class="engine-page__result-label">Completed at</span>
-          <span class="engine-page__result-value">{{ completedAt() }}</span>
-        </div>
+        <button class="btn btn--secondary" (click)="reset()">Back</button>
       </div>
-    }
-
-  </div>
+    </div>
+  }
 </div>

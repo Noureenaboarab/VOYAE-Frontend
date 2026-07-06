@@ -322,9 +322,9 @@
                         <span>Subtotal</span>
                         <span>{{ formatPrice(subtotal()) || '$690' }}</span>
                     </div>
-                    @if (couponApplied()) {
+                    @if (cartDiscount() > 0) {
                         <div class="price-line price-line--discount">
-                            <span>Discount ({{ couponCode() }})</span>
+                            <span>{{ couponCode() || 'Bundle' }}</span>
                             <span>−{{ formatPrice(cartDiscount()) }}</span>
                         </div>
                     }

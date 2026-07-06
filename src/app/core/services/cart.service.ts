@@ -1,7 +1,7 @@
 // ============================================================
 // VOYÆ — Cart Service (backend-integrated)
 // ============================================================
-// This service is a thin reactive wrapper around GET/POST/PATCH/DELETE
+// This service is a thin reactive wrapper around GET/POST/PUT/DELETE
 // /api/cart/*. The backend is the source of truth for items, quantities,
 // prices, and totals — nothing here recomputes subtotal/effectivePrice
 // itself. Coupons/shipping have no backend equivalent yet (only "offers"
@@ -139,7 +139,7 @@ export class CartService {
       this.removeItem(itemId);
       return;
     }
-    this.http.patch<CartResponse>(`/api/cart/items/${itemId}`, { quantity }).subscribe({
+    this.http.put<CartResponse>(`/api/cart/items/${itemId}`, { quantity }).subscribe({
       next: (cart) => { this.cart.set(cart); this.error.set(null); },
       error: (err) => this.handleError(err),
     });
