@@ -34,6 +34,7 @@ export class AccountComponent {
   addressesError = signal<string | null>(null);
   defaultAddressUpdatingId = signal<number | null>(null);
   deletingAddressId = signal<number | null>(null);
+  deleteConfirmAddressId = signal<number | null>(null);
   addressFormVisible = signal(false);
   creatingAddress = signal(false);
   createAddressError = signal<string | null>(null);
@@ -210,11 +211,14 @@ export class AccountComponent {
   removeAddress(address: Address): void {
     if (this.deletingAddressId() !== null) return;
 
-    const confirmed = window.confirm(`Remove ${address.label}?`);
-    if (!confirmed) return;
+    if (this.deleteConfirmAddressId() !== address.id) {
+      this.deleteConfirmAddressId.set(address.id);
+      return;
+    }
 
     this.deletingAddressId.set(address.id);
     this.addressesError.set(null);
+    this.deleteConfirmAddressId.set(null);
 
     this.accountService.deleteAddress(address.id).subscribe({
       next: () => {
@@ -227,6 +231,10 @@ export class AccountComponent {
         this.deletingAddressId.set(null);
       },
     });
+  }
+
+  cancelDeleteAddress(): void {
+    this.deleteConfirmAddressId.set(null);
   }
 
   private loadOrders(force = false): void {
