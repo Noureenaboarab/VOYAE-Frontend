@@ -7,8 +7,22 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { AccountService } from '../../core/services/account.service';
-import { Address, AddressCreateRequest, Order, UserProfile } from '../../core/models';
+import { AccountPasswordChangeRequest, AccountProfileUpdateRequest, Address, AddressCreateRequest, Order, UserProfile } from '../../core/models';
 import { AccountResolvedData } from '../../core/resolvers/account.resolver';
+
+const PASSWORD_MIN_LENGTH = 8;
+
+function getPasswordStrengthErrors(value: string): Record<string, boolean> {
+  const errors: Record<string, boolean> = {};
+
+  if (value.length < PASSWORD_MIN_LENGTH) errors['minLength'] = true;
+  if (!/[a-z]/.test(value)) errors['lowercase'] = true;
+  if (!/[A-Z]/.test(value)) errors['uppercase'] = true;
+  if (!/\d/.test(value)) errors['number'] = true;
+  if (!/[@$!%*?&]/.test(value)) errors['special'] = true;
+
+  return errors;
+}
 
 type AccountSection = 'personal' | 'orders' | 'wishlist' | 'addresses' | 'payment' | 'preferences';
 
@@ -26,6 +40,11 @@ export class AccountComponent {
 
   activeSection = signal<AccountSection>('personal');
   editingProfile = signal(false);
+  savingProfile = signal(false);
+  profileError = signal<string | null>(null);
+  passwordFormVisible = signal(false);
+  changingPassword = signal(false);
+  passwordError = signal<string | null>(null);
   orders = signal<Order[]>([]);
   ordersLoading = signal(false);
   ordersError = signal<string | null>(null);
@@ -67,6 +86,8 @@ export class AccountComponent {
   defaultAddress = computed(() => this.addresses().find(address => address.isDefault) ?? null);
 
   profile!: UserProfile;
+  profileDraft: AccountProfileUpdateRequest = this.createProfileDraft(this.profileFallback());
+  passwordDraft: AccountPasswordChangeRequest = this.createPasswordDraft();
 
   constructor() {
     const resolved: AccountResolvedData | null = this.route.snapshot.data['account'];
@@ -74,18 +95,10 @@ export class AccountComponent {
     if (resolved?.profile) {
       this.profile = resolved.profile;
     } else {
-      this.profile = {
-          id: 2,
-          firstName: 'Sarah',
-          lastName: 'Mitchell',
-          name: 'Sarah Mitchell',
-          email: 'sarah@example.com',
-          gender: 'FEMALE',
-          job: 'Designer',
-          dateOfBirth: '1995-06-20',
-          memberSince: '2026-06-26T16:23:14',
-        };
+      this.profile = this.profileFallback();
     }
+
+    this.profileDraft = this.createProfileDraft(this.profile);
 
     this.loadOrders();
     this.loadAddresses();
@@ -103,6 +116,85 @@ export class AccountComponent {
     if (id === 'addresses') {
       this.loadAddresses();
     }
+  }
+
+  startProfileEdit(): void {
+    this.profileDraft = this.createProfileDraft(this.profile);
+    this.profileError.set(null);
+    this.editingProfile.set(true);
+  }
+
+  cancelProfileEdit(): void {
+    this.profileDraft = this.createProfileDraft(this.profile);
+    this.profileError.set(null);
+    this.editingProfile.set(false);
+  }
+
+  saveProfile(): void {
+    if (this.savingProfile()) return;
+
+    this.profileError.set(null);
+    this.savingProfile.set(true);
+
+    this.accountService.updateProfile(this.profileDraft).subscribe({
+      next: () => {
+        this.profile = {
+          ...this.profile,
+          ...this.profileDraft,
+          name: `${this.profileDraft.firstName} ${this.profileDraft.lastName}`.trim(),
+        };
+        this.profileDraft = this.createProfileDraft(this.profile);
+        this.editingProfile.set(false);
+        this.savingProfile.set(false);
+      },
+      error: err => {
+        console.error('Failed to update profile', err);
+        this.profileError.set('Could not save your profile changes. Please try again.');
+        this.savingProfile.set(false);
+      },
+    });
+  }
+
+  showPasswordForm(): void {
+    this.passwordFormVisible.set(true);
+    this.passwordError.set(null);
+    this.passwordDraft = this.createPasswordDraft();
+  }
+
+  cancelPasswordChange(): void {
+    this.passwordFormVisible.set(false);
+    this.passwordError.set(null);
+    this.passwordDraft = this.createPasswordDraft();
+  }
+
+  submitPasswordChange(): void {
+    if (this.changingPassword()) return;
+
+    const strengthErrors = this.getPasswordStrengthErrors();
+    if (Object.keys(strengthErrors).length > 0) {
+      this.passwordError.set('Please use a stronger password that matches the requirements below.');
+      return;
+    }
+
+    if (this.passwordDraft.newPassword !== this.passwordDraft.confirmNewPassword) {
+      this.passwordError.set('New password and confirmation must match.');
+      return;
+    }
+
+    this.passwordError.set(null);
+    this.changingPassword.set(true);
+
+    this.accountService.updatePassword(this.passwordDraft).subscribe({
+      next: () => {
+        this.changingPassword.set(false);
+        this.cancelPasswordChange();
+      },
+      error: err => {
+        console.error('Failed to update password', err);
+        this.passwordError.set('Could not change your password. Please try again.');
+        this.changingPassword.set(false);
+      },
+    });
   }
 
   getOrderDescription(order: Order): string {
@@ -149,6 +241,63 @@ export class AccountComponent {
     return [address.street, address.city, address.postalCode, address.country]
       .filter(Boolean)
       .join(', ');
+  }
+
+  private createProfileDraft(profile: UserProfile): AccountProfileUpdateRequest {
+    return {
+      name: profile.name || `${profile.firstName} ${profile.lastName}`.trim(),
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      email: profile.email,
+      gender: profile.gender,
+      job: profile.job,
+      dateOfBirth: profile.dateOfBirth,
+    };
+  }
+
+  private createPasswordDraft(): AccountPasswordChangeRequest {
+    return {
+      currentPassword: '',
+      newPassword: '',
+      confirmNewPassword: '',
+    };
+  }
+
+  getPasswordStrengthErrors(): Record<string, boolean> {
+    return getPasswordStrengthErrors(this.passwordDraft.newPassword);
+  }
+
+  passwordStrengthHasError(name: 'minLength' | 'lowercase' | 'uppercase' | 'number' | 'special'): boolean {
+    return Boolean(this.getPasswordStrengthErrors()[name]);
+  }
+
+  passwordsMismatch(): boolean {
+    return Boolean(this.passwordDraft.newPassword && this.passwordDraft.confirmNewPassword && this.passwordDraft.newPassword !== this.passwordDraft.confirmNewPassword);
+  }
+
+  isPasswordChangeValid(): boolean {
+    const strengthErrors = this.getPasswordStrengthErrors();
+    return Boolean(
+      this.passwordDraft.currentPassword &&
+      this.passwordDraft.newPassword &&
+      this.passwordDraft.confirmNewPassword &&
+      Object.keys(strengthErrors).length === 0 &&
+      !this.passwordsMismatch()
+    );
+  }
+
+  private profileFallback(): UserProfile {
+    return {
+      id: 2,
+      firstName: 'Sarah',
+      lastName: 'Mitchell',
+      name: 'Sarah Mitchell',
+      email: 'sarah@example.com',
+      gender: 'FEMALE',
+      job: 'Designer',
+      dateOfBirth: '1995-06-20',
+      memberSince: '2026-06-26T16:23:14',
+    };
   }
 
   showAddressForm(): void {

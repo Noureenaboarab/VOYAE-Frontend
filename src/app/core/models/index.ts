@@ -110,6 +110,22 @@ export interface UserProfile {
   memberSince: string;
 }
 
+export interface AccountProfileUpdateRequest {
+  name: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  gender: string;
+  job: string;
+  dateOfBirth: string;
+}
+
+export interface AccountPasswordChangeRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
 export interface Address {
   id: number;
   label: string;

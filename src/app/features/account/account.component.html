@@ -93,7 +93,8 @@
                 <h1 class="account-content-block__title">Personal Info</h1>
                 <button
                   class="btn btn--ghost btn--sm"
-                  (click)="editingProfile.set(!editingProfile())">
+                  type="button"
+                  (click)="editingProfile() ? cancelProfileEdit() : startProfileEdit()">
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                     <path d="M8.5 1.5l2 2-7 7H1.5v-2l7-7z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
                   </svg>
@@ -101,7 +102,7 @@
                 </button>
               </div>
 
-              <div class="profile-fields">
+              <form class="profile-fields" (ngSubmit)="saveProfile()">
 
                 <div class="form-row">
                   <div class="form-group">
@@ -109,7 +110,8 @@
                     <input
                       type="text"
                       class="form-control"
-                      [value]="profile.firstName"
+                      [(ngModel)]="profileDraft.firstName"
+                      name="firstName"
                       [readonly]="!editingProfile()" />
                   </div>
 
@@ -118,7 +120,8 @@
                     <input
                       type="text"
                       class="form-control"
-                      [value]="profile.lastName"
+                      [(ngModel)]="profileDraft.lastName"
+                      name="lastName"
                       [readonly]="!editingProfile()" />
                   </div>
                 </div>
@@ -129,7 +132,8 @@
                     <input
                       type="email"
                       class="form-control"
-                      [value]="profile.email"
+                      [(ngModel)]="profileDraft.email"
+                      name="email"
                       [readonly]="!editingProfile()" />
                   </div>
 
@@ -138,7 +142,8 @@
                     <input
                       type="text"
                       class="form-control"
-                      [value]="profile.gender"
+                      [(ngModel)]="profileDraft.gender"
+                      name="gender"
                       [readonly]="!editingProfile()" />
                   </div>
                 </div>
@@ -149,7 +154,8 @@
                     <input
                       type="date"
                       class="form-control"
-                      [value]="profile.dateOfBirth"
+                      [(ngModel)]="profileDraft.dateOfBirth"
+                      name="dateOfBirth"
                       [readonly]="!editingProfile()" />
                   </div>
 
@@ -158,33 +164,134 @@
                     <input
                       type="text"
                       class="form-control"
-                      [value]="profile.job"
+                      [(ngModel)]="profileDraft.job"
+                      name="job"
                       [readonly]="!editingProfile()" />
                   </div>
                 </div>
 
+                @if (profileError()) {
+                  <p class="orders-state orders-state--error">{{ profileError() }}</p>
+                }
+
                 @if (editingProfile()) {
-                  <button class="btn btn--primary" style="margin-top: var(--space-4)">
-                    Save Changes
+                  <button
+                    type="submit"
+                    class="btn btn--primary"
+                    style="margin-top: var(--space-4)"
+                    [disabled]="savingProfile()">
+                    {{ savingProfile() ? 'Saving...' : 'Save Changes' }}
                   </button>
                 }
 
-              </div>
+              </form>
 
               <!-- Password -->
               <div class="account-content-block" style="margin-top: var(--space-10)">
                 <div class="account-content-block__header">
                   <h2 class="account-content-block__title">Password</h2>
-                  <button class="btn btn--ghost btn--sm">
+                  <button
+                    type="button"
+                    class="btn btn--ghost btn--sm"
+                    (click)="passwordFormVisible() ? cancelPasswordChange() : showPasswordForm()">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                       <path d="M8.5 1.5l2 2-7 7H1.5v-2l7-7z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
                     </svg>
-                    Change
+                    {{ passwordFormVisible() ? 'Cancel' : 'Change' }}
                   </button>
                 </div>
-                <div class="form-group">
-                  <input type="password" class="form-control" value="••••••••••••" readonly />
-                </div>
+
+                @if (passwordFormVisible()) {
+                  <form class="profile-fields" (ngSubmit)="submitPasswordChange()">
+                    <div class="form-group">
+                      <label class="form-label" for="current-password">Current Password</label>
+                      <input
+                        id="current-password"
+                        type="password"
+                        class="form-control"
+                        [class.is-error]="passwordError() !== null && !passwordDraft.currentPassword"
+                        [(ngModel)]="passwordDraft.currentPassword"
+                        name="currentPassword"
+                        placeholder="Enter current password"
+                        required />
+                      @if (!passwordDraft.currentPassword) {
+                        <span class="form-error">Current password is required</span>
+                      }
+                    </div>
+
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label" for="new-password">New Password</label>
+                        <input
+                          id="new-password"
+                          type="password"
+                          class="form-control"
+                          [class.is-error]="passwordDraft.newPassword.length > 0 && (passwordStrengthHasError('minLength') || passwordStrengthHasError('lowercase') || passwordStrengthHasError('uppercase') || passwordStrengthHasError('number') || passwordStrengthHasError('special'))"
+                          [(ngModel)]="passwordDraft.newPassword"
+                          name="newPassword"
+                          placeholder="Enter new password"
+                          required />
+                        @if (!passwordDraft.newPassword) {
+                          <span class="form-error">New password is required</span>
+                        }
+                        @if (passwordDraft.newPassword && passwordStrengthHasError('minLength')) {
+                          <span class="form-error">At least 8 characters</span>
+                        }
+                        @if (passwordDraft.newPassword && !passwordStrengthHasError('minLength') && passwordStrengthHasError('lowercase')) {
+                          <span class="form-error">Missing a lowercase letter</span>
+                        }
+                        @if (passwordDraft.newPassword && !passwordStrengthHasError('minLength') && passwordStrengthHasError('uppercase')) {
+                          <span class="form-error">Missing an uppercase letter</span>
+                        }
+                        @if (passwordDraft.newPassword && !passwordStrengthHasError('minLength') && passwordStrengthHasError('number')) {
+                          <span class="form-error">Missing a number</span>
+                        }
+                        @if (passwordDraft.newPassword && !passwordStrengthHasError('minLength') && passwordStrengthHasError('special')) {
+                          <span class="form-error">Missing a special character (&#64;$!%*?&amp;)</span>
+                        }
+                      </div>
+
+                      <div class="form-group">
+                        <label class="form-label" for="confirm-new-password">Confirm New Password</label>
+                        <input
+                          id="confirm-new-password"
+                          type="password"
+                          class="form-control"
+                          [class.is-error]="passwordDraft.confirmNewPassword.length > 0 && passwordsMismatch()"
+                          [(ngModel)]="passwordDraft.confirmNewPassword"
+                          name="confirmNewPassword"
+                          placeholder="Confirm new password"
+                          required />
+                        @if (!passwordDraft.confirmNewPassword) {
+                          <span class="form-error">Please confirm your password</span>
+                        }
+                        @if (passwordDraft.confirmNewPassword && passwordsMismatch()) {
+                          <span class="form-error">Passwords do not match</span>
+                        }
+                      </div>
+                    </div>
+
+                    @if (passwordError()) {
+                      <p class="orders-state orders-state--error">{{ passwordError() }}</p>
+                    }
+
+                    <div class="address-form__actions">
+                      <button type="button" class="btn btn--ghost btn--sm" (click)="cancelPasswordChange()">
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        class="btn btn--primary btn--sm"
+                        [disabled]="changingPassword() || !isPasswordChangeValid()">
+                        {{ changingPassword() ? 'Saving...' : 'Save password' }}
+                      </button>
+                    </div>
+                  </form>
+                } @else {
+                  <div class="form-group">
+                    <input type="password" class="form-control" value="••••••••••••" readonly />
+                  </div>
+                }
               </div>
 
               <!-- Recent orders -->
