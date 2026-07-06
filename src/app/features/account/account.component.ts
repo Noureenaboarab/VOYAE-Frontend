@@ -56,15 +56,16 @@ export class AccountComponent {
       this.profile = resolved.profile;
     } else {
       this.profile = {
-        firstName:   'Sarah',
-        lastName:    'Mitchell',
-        email:       'sarah.mitchell@email.com',
-        phone:       '+1 (555) 214-8832',
-        dateOfBirth: 'March 14, 1991',
-        country:     'United States',
-        memberSince: '2022',
-        avatarUrl:   '/assets/images/avatar-sarah.jpg',
-      };
+          id: 2,
+          firstName: 'Sarah',
+          lastName: 'Mitchell',
+          name: 'Sarah Mitchell',
+          email: 'sarah@example.com',
+          gender: 'FEMALE',
+          job: 'Designer',
+          dateOfBirth: '1995-06-20',
+          memberSince: '2026-06-26T16:23:14',
+        };
     }
 
     this.loadOrders();

@@ -7,16 +7,11 @@
 
         <!-- Avatar + name -->
         <div class="account__profile-head">
-          <div class="account__avatar-wrap">
-            <img
-              [src]="profile.avatarUrl"
-              [alt]="profile.firstName + ' ' + profile.lastName"
-              class="account__avatar"
-              onerror="this.src=''" />
-            <span class="account__avatar-initials" [class.is-visible]="!profile.avatarUrl">
-              {{ profile.firstName[0] }}{{ profile.lastName[0] }}
-            </span>
-          </div>
+        <div class="account__avatar-wrap">
+          <span class="account__avatar-initials is-visible">
+            {{ profile.firstName[0] }}{{ profile.lastName[0] }}
+          </span>
+        </div>  
           <div>
             <p class="account__profile-name">{{ profile.firstName }} {{ profile.lastName }}</p>
             <p class="account__profile-since">Member since {{ profile.memberSince }}</p>
@@ -107,39 +102,73 @@
               </div>
 
               <div class="profile-fields">
+
                 <div class="form-row">
                   <div class="form-group">
                     <label class="form-label">First Name</label>
-                    <input type="text" class="form-control" [value]="profile.firstName" [readonly]="!editingProfile()" />
+                    <input
+                      type="text"
+                      class="form-control"
+                      [value]="profile.firstName"
+                      [readonly]="!editingProfile()" />
                   </div>
+
                   <div class="form-group">
                     <label class="form-label">Last Name</label>
-                    <input type="text" class="form-control" [value]="profile.lastName" [readonly]="!editingProfile()" />
+                    <input
+                      type="text"
+                      class="form-control"
+                      [value]="profile.lastName"
+                      [readonly]="!editingProfile()" />
                   </div>
                 </div>
+
                 <div class="form-row">
                   <div class="form-group">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" class="form-control" [value]="profile.email" [readonly]="!editingProfile()" />
+                    <label class="form-label">Email</label>
+                    <input
+                      type="email"
+                      class="form-control"
+                      [value]="profile.email"
+                      [readonly]="!editingProfile()" />
                   </div>
+
                   <div class="form-group">
-                    <label class="form-label">Phone Number</label>
-                    <input type="tel" class="form-control" [value]="profile.phone" [readonly]="!editingProfile()" />
+                    <label class="form-label">Gender</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      [value]="profile.gender"
+                      [readonly]="!editingProfile()" />
                   </div>
                 </div>
+
                 <div class="form-row">
                   <div class="form-group">
                     <label class="form-label">Date of Birth</label>
-                    <input type="text" class="form-control" [value]="profile.dateOfBirth" [readonly]="!editingProfile()" />
+                    <input
+                      type="date"
+                      class="form-control"
+                      [value]="profile.dateOfBirth"
+                      [readonly]="!editingProfile()" />
                   </div>
+
                   <div class="form-group">
-                    <label class="form-label">Country</label>
-                    <input type="text" class="form-control" [value]="profile.country" [readonly]="!editingProfile()" />
+                    <label class="form-label">Job</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      [value]="profile.job"
+                      [readonly]="!editingProfile()" />
                   </div>
                 </div>
+
                 @if (editingProfile()) {
-                  <button class="btn btn--primary" style="margin-top: var(--space-4)">Save changes</button>
+                  <button class="btn btn--primary" style="margin-top: var(--space-4)">
+                    Save Changes
+                  </button>
                 }
+
               </div>
 
               <!-- Password -->

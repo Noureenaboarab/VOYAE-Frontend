@@ -83,21 +83,18 @@ export interface BackendOrder {
 }
 
 export interface UserProfile {
-  id?:          number;
-  name?:        string;
-  firstName:    string;
-  lastName:     string;
-  email:        string;
-  phone?:       string;
-  dateOfBirth?: string;
-  job?:         string;
-  gender?:      string;
-  street?:      string;
-  city?:        string;
-  country:      string;
-  postalCode?:  string;
-  memberSince:  string;
-  avatarUrl?:   string;
+  id: number;
+
+  name: string;
+  firstName: string;
+  lastName: string;
+
+  email: string;
+  gender: string;
+  job: string;
+  dateOfBirth: string;
+
+  memberSince: string;
 }
 
 export interface ShippingOption {
