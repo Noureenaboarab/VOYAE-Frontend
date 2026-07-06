@@ -1,263 +1,263 @@
 <div class="admin-orders">
 
-  <!-- ── Top bar ──────────────────────────────────────────── -->
-  <div class="admin-orders__topbar">
-    <div class="admin-orders__heading">
-      <p class="eyebrow">Store</p>
-      <h1 class="display-md">Orders</h1>
-    </div>
-    <div class="admin-orders__topbar-actions">
-      <button class="btn btn--ghost admin-orders__action-btn">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-          <path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M2 12h11"                   stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        </svg>
-        Export
-      </button>
-    </div>
-  </div>
-
-  <!-- ── Tab bar ───────────────────────────────────────────── -->
-  <div class="admin-tabs" role="tablist" aria-label="Filter orders by status">
-    <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'all'"
-      (click)="setTab('all')" role="tab" [attr.aria-selected]="activeTab() === 'all'">
-      All Orders <span class="admin-tabs__count">{{ totalCount() }}</span>
-    </button>
-    <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'processing'"
-      (click)="setTab('processing')" role="tab" [attr.aria-selected]="activeTab() === 'processing'">
-      Processing <span class="admin-tabs__count">{{ processingCount() }}</span>
-    </button>
-    <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'shipped'"
-      (click)="setTab('shipped')" role="tab" [attr.aria-selected]="activeTab() === 'shipped'">
-      Shipped <span class="admin-tabs__count">{{ shippedCount() }}</span>
-    </button>
-    <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'delivered'"
-      (click)="setTab('delivered')" role="tab" [attr.aria-selected]="activeTab() === 'delivered'">
-      Delivered <span class="admin-tabs__count">{{ deliveredCount() }}</span>
-    </button>
-    <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'returned'"
-      (click)="setTab('returned')" role="tab" [attr.aria-selected]="activeTab() === 'returned'">
-      Returned <span class="admin-tabs__count">{{ returnedCount() }}</span>
-    </button>
-  </div>
-
-  <!-- ── Orders panel ──────────────────────────────────────── -->
-  <div class="orders-panel">
-
-    <!-- Toolbar -->
-    <div class="orders-toolbar">
-      <div class="search-input-wrap">
-        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-          <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.4"/>
-          <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        </svg>
-        <input type="text" class="search-input"
-          placeholder="Search by order ID or customer…"
-          aria-label="Search orders"
-          [value]="searchQuery()"
-          (input)="onSearch($any($event.target).value)" />
-      </div>
-      <div class="toolbar-spacer"></div>
+    <!-- ── Top bar ──────────────────────────────────────────── -->
+    <div class="admin-orders__topbar">
+        <div class="admin-orders__heading">
+            <p class="eyebrow">Store</p>
+            <h1 class="display-md">Orders</h1>
+        </div>
+        <div class="admin-orders__topbar-actions">
+            <button class="btn btn--ghost admin-orders__action-btn">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+                    <path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 12h11"                   stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+                Export
+            </button>
+        </div>
     </div>
 
-    <!-- Table -->
-    @if (filteredOrders().length === 0) {
-      <div class="orders-empty">
-        <p class="text-muted">No orders match your current filters.</p>
-      </div>
-    } @else {
-      <div class="orders-table-wrap">
-        <table class="orders-table" aria-label="Order list">
-          <thead>
-            <tr>
-              <th scope="col">Order</th>
-              <th scope="col">Customer</th>
-              <th scope="col">Items</th>
-              <th scope="col">Total</th>
-              <th scope="col">Status</th>
-              <th scope="col"><span class="sr-only">Actions</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (order of paginatedOrders(); track order.id) {
+    <!-- ── Tab bar ───────────────────────────────────────────── -->
+    <div class="admin-tabs" role="tablist" aria-label="Filter orders by status">
+        <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'all'"
+                (click)="setTab('all')" role="tab" [attr.aria-selected]="activeTab() === 'all'">
+            All Orders <span class="admin-tabs__count">{{ totalCount() }}</span>
+        </button>
+        <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'processing'"
+                (click)="setTab('processing')" role="tab" [attr.aria-selected]="activeTab() === 'processing'">
+            Processing <span class="admin-tabs__count">{{ processingCount() }}</span>
+        </button>
+        <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'shipped'"
+                (click)="setTab('shipped')" role="tab" [attr.aria-selected]="activeTab() === 'shipped'">
+            Shipped <span class="admin-tabs__count">{{ shippedCount() }}</span>
+        </button>
+        <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'delivered'"
+                (click)="setTab('delivered')" role="tab" [attr.aria-selected]="activeTab() === 'delivered'">
+            Delivered <span class="admin-tabs__count">{{ deliveredCount() }}</span>
+        </button>
+        <button class="admin-tabs__tab" [class.is-active]="activeTab() === 'returned'"
+                (click)="setTab('returned')" role="tab" [attr.aria-selected]="activeTab() === 'returned'">
+            Returned <span class="admin-tabs__count">{{ returnedCount() }}</span>
+        </button>
+    </div>
 
-              <!-- ── Main row ──────────────────────────────── -->
-              <tr [class.is-expanded]="expandedOrderId() === order.id">
+    <!-- ── Orders panel ──────────────────────────────────────── -->
+    <div class="orders-panel">
 
-                <!-- Order ID + date -->
-                <td class="td--order">
-                  <p class="order-id">{{ order.id }}</p>
-                  <p class="order-date">{{ formatDate(order.date) }}</p>
-                </td>
+        <!-- Toolbar -->
+        <div class="orders-toolbar">
+            <div class="search-input-wrap">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+                    <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.4"/>
+                    <path d="M10.5 10.5L13.5 13.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+                <input type="text" class="search-input"
+                       placeholder="Search by order ID or customer…"
+                       aria-label="Search orders"
+                       [value]="searchQuery()"
+                       (input)="onSearch($any($event.target).value)" />
+            </div>
+            <div class="toolbar-spacer"></div>
+        </div>
 
-                <!-- Customer -->
-                <td>
-                  <div class="customer-cell">
-                    <div class="customer-cell__avatar" aria-hidden="true">
-                      {{ order.customer.initials }}
-                    </div>
-                    <div>
-                      <p class="customer-cell__name">{{ order.customer.name }}</p>
-                      <p class="customer-cell__email">{{ order.customer.email }}</p>
-                    </div>
-                  </div>
-                </td>
+        <!-- Table -->
+        @if (filteredOrders().length === 0) {
+            <div class="orders-empty">
+                <p class="text-muted">No orders match your current filters.</p>
+            </div>
+        } @else {
+            <div class="orders-table-wrap">
+                <table class="orders-table" aria-label="Order list">
+                    <thead>
+                    <tr>
+                        <th scope="col">Order</th>
+                        <th scope="col">Customer</th>
+                        <th scope="col">Items</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Status</th>
+                        <th scope="col"><span class="sr-only">Actions</span></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        @for (order of paginatedOrders(); track order.id) {
 
-                <!-- Items preview -->
-                <td class="td--items">{{ getItemPreview(order) }}</td>
+                            <!-- ── Main row ──────────────────────────────── -->
+                            <tr [class.is-expanded]="expandedOrderId() === order.id">
 
-                <!-- Total -->
-                <td class="td--total">{{ formatTotal(order.total) }}</td>
+                                <!-- Order ID + date -->
+                                <td class="td--order">
+                                    <p class="order-id">{{ order.id }}</p>
+                                    <p class="order-date">{{ formatDate(order.date) }}</p>
+                                </td>
 
-                <!-- Status badge with dropdown -->
-                <td class="td--status">
-                  <div class="status-cell">
-                    <button
-                      class="status-badge status-badge--{{ order.status }}"
-                      (click)="toggleDropdown(order.id, $event)"
-                      [attr.aria-expanded]="activeDropdown() === order.id"
-                      [attr.aria-label]="'Change status for order ' + order.id">
-                      {{ getStatusLabel(order.status) }}
-                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                        <path d="M2.5 4L5 6.5 7.5 4" stroke="currentColor" stroke-width="1.4"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </button>
+                                <!-- Customer -->
+                                <td>
+                                    <div class="customer-cell">
+                                        <div class="customer-cell__avatar" aria-hidden="true">
+                                            {{ order.customer.initials }}
+                                        </div>
+                                        <div>
+                                            <p class="customer-cell__name">{{ order.customer.name }}</p>
+                                            <p class="customer-cell__email">{{ order.customer.email }}</p>
+                                        </div>
+                                    </div>
+                                </td>
 
-                    @if (activeDropdown() === order.id) {
-                      <div class="status-dropdown" role="menu">
-                        @for (opt of STATUS_OPTIONS; track opt.value) {
-                          <button
-                            class="status-dropdown__option"
-                            [class.is-current]="order.status === opt.value"
-                            (click)="changeStatus(order.id, opt.value, $event)"
-                            role="menuitem">
+                                <!-- Items preview -->
+                                <td class="td--items">{{ getItemPreview(order) }}</td>
+
+                                <!-- Total -->
+                                <td class="td--total">{{ formatTotal(order.total) }}</td>
+
+                                <!-- Status badge with dropdown -->
+                                <td class="td--status">
+                                    <div class="status-cell">
+                                        <button
+                                                class="status-badge status-badge--{{ order.status }}"
+                                                (click)="toggleDropdown(order.id, $event)"
+                                                [attr.aria-expanded]="activeDropdown() === order.id"
+                                                [attr.aria-label]="'Change status for order ' + order.id">
+                                            {{ getStatusLabel(order.status) }}
+                                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                                                <path d="M2.5 4L5 6.5 7.5 4" stroke="currentColor" stroke-width="1.4"
+                                                      stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </button>
+
+                                        @if (activeDropdown() === order.id) {
+                                            <div class="status-dropdown" role="menu">
+                                                @for (opt of STATUS_OPTIONS; track opt.value) {
+                                                    <button
+                                                            class="status-dropdown__option"
+                                                            [class.is-current]="order.status === opt.value"
+                                                            (click)="changeStatus(order.id, opt.value, $event)"
+                                                            role="menuitem">
                             <span class="status-dropdown__check"
-                              [class.is-visible]="order.status === opt.value"
-                              aria-hidden="true">
+                                  [class.is-visible]="order.status === opt.value"
+                                  aria-hidden="true">
                               <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                                 <path d="M1.5 5.5l3 3 5-6" stroke="currentColor" stroke-width="1.5"
-                                  stroke-linecap="round" stroke-linejoin="round"/>
+                                      stroke-linecap="round" stroke-linejoin="round"/>
                               </svg>
                             </span>
-                            {{ opt.label }}
-                          </button>
-                        }
-                      </div>
-                    }
-                  </div>
-                </td>
+                                                        {{ opt.label }}
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </td>
 
-                <!-- View / collapse toggle -->
-                <td>
-                  <div class="table-actions">
-                    <button
-                      class="table-action-btn"
-                      [class.is-active]="expandedOrderId() === order.id"
-                      (click)="toggleExpanded(order.id)"
-                      [attr.aria-expanded]="expandedOrderId() === order.id"
-                      [attr.aria-label]="(expandedOrderId() === order.id ? 'Hide' : 'View') + ' details for order ' + order.id"
-                      [title]="expandedOrderId() === order.id ? 'Hide details' : 'View details'">
-                      @if (expandedOrderId() === order.id) {
-                        <!-- Chevron up (close) -->
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                          <path d="M3 9l4-4 4 4" stroke="currentColor" stroke-width="1.5"
-                            stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      } @else {
-                        <!-- Chevron down (open) -->
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                          <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5"
-                            stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      }
-                    </button>
-                  </div>
-                </td>
+                                <!-- View / collapse toggle -->
+                                <td>
+                                    <div class="table-actions">
+                                        <button
+                                                class="table-action-btn"
+                                                [class.is-active]="expandedOrderId() === order.id"
+                                                (click)="toggleExpanded(order.id)"
+                                                [attr.aria-expanded]="expandedOrderId() === order.id"
+                                                [attr.aria-label]="(expandedOrderId() === order.id ? 'Hide' : 'View') + ' details for order ' + order.id"
+                                                [title]="expandedOrderId() === order.id ? 'Hide details' : 'View details'">
+                                            @if (expandedOrderId() === order.id) {
+                                                <!-- Chevron up (close) -->
+                                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                                                    <path d="M3 9l4-4 4 4" stroke="currentColor" stroke-width="1.5"
+                                                          stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                            } @else {
+                                                <!-- Chevron down (open) -->
+                                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                                                    <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5"
+                                                          stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                            }
+                                        </button>
+                                    </div>
+                                </td>
 
-              </tr>
-
-              <!-- ── Detail row ─────────────────────────────── -->
-              @if (expandedOrderId() === order.id) {
-                <tr class="order-details-row">
-                  <td colspan="6" class="order-details-cell">
-                    <div class="order-details">
-
-                      <!-- Header -->
-                      <div class="order-details__header">
-                        <p class="order-details__label">Order breakdown</p>
-                        <p class="order-details__meta">
-                          Placed {{ formatDate(order.date) }} at {{ formatTime(order.date) }}
-                          &nbsp;·&nbsp; {{ order.customer.name }}
-                          &nbsp;·&nbsp; {{ order.customer.email }}
-                        </p>
-                      </div>
-
-                      <!-- Items table -->
-                      <table class="order-items-table">
-                        <thead>
-                          <tr>
-                            <th scope="col">Product</th>
-                            <th scope="col">Colour</th>
-                            <th scope="col">Qty</th>
-                            <th scope="col" class="th--right">Unit price</th>
-                            <th scope="col" class="th--right">Line total</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @for (item of order.items; track item.productId) {
-                            <tr>
-                              <td class="item-name">{{ item.name }}</td>
-                              <td class="item-color">{{ item.color }}</td>
-                              <td class="item-qty">{{ item.quantity }}</td>
-                              <td class="item-price td--right">${{ item.price }}</td>
-                              <td class="item-total td--right">{{ lineTotal(item.price, item.quantity) }}</td>
                             </tr>
-                          }
-                        </tbody>
-                      </table>
 
-                      <!-- Order total -->
-                      <div class="order-details__total-row">
-                        <span class="order-details__total-label">Order Total</span>
-                        <span class="order-details__total-amount">{{ formatTotal(order.total) }}</span>
-                      </div>
+                            <!-- ── Detail row ─────────────────────────────── -->
+                            @if (expandedOrderId() === order.id) {
+                                <tr class="order-details-row">
+                                    <td colspan="6" class="order-details-cell">
+                                        <div class="order-details">
 
-                    </div>
-                  </td>
-                </tr>
-              }
+                                            <!-- Header -->
+                                            <div class="order-details__header">
+                                                <p class="order-details__label">Order breakdown</p>
+                                                <p class="order-details__meta">
+                                                    Placed {{ formatDate(order.date) }} at {{ formatTime(order.date) }}
+                                                    &nbsp;·&nbsp; {{ order.customer.name }}
+                                                    &nbsp;·&nbsp; {{ order.customer.email }}
+                                                </p>
+                                            </div>
 
-            }
-          </tbody>
-        </table>
-      </div>
-    }
+                                            <!-- Items table -->
+                                            <table class="order-items-table">
+                                                <thead>
+                                                <tr>
+                                                    <th scope="col">Product</th>
+                                                    <th scope="col">Colour</th>
+                                                    <th scope="col">Qty</th>
+                                                    <th scope="col" class="th--right">Unit price</th>
+                                                    <th scope="col" class="th--right">Line total</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @for (item of order.items; track item.productId) {
+                                                        <tr>
+                                                            <td class="item-name">{{ item.name }}</td>
+                                                            <td class="item-color">{{ item.color }}</td>
+                                                            <td class="item-qty">{{ item.quantity }}</td>
+                                                            <td class="item-price td--right">${{ item.price }}</td>
+                                                            <td class="item-total td--right">{{ lineTotal(item.price, item.quantity) }}</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
 
-    <!-- Pagination -->
-    @if (filteredOrders().length > 0) {
-      <div class="orders-pagination">
-        <p class="orders-pagination__info">
-          Showing {{ showingCount() }} of {{ filteredCount() }} orders
-        </p>
-        <div class="orders-pagination__pages" role="navigation" aria-label="Pagination">
-          <button class="page-btn" [disabled]="currentPage() === 1"
-            (click)="goToPage(currentPage() - 1)" aria-label="Previous page">‹</button>
-          @for (page of pages(); track page) {
-            <button class="page-btn"
-              [class.is-active]="currentPage() === page"
-              (click)="goToPage(page)"
-              [attr.aria-label]="'Page ' + page"
-              [attr.aria-current]="currentPage() === page ? 'page' : null">
-              {{ page }}
-            </button>
-          }
-          <button class="page-btn" [disabled]="currentPage() === totalPages()"
-            (click)="goToPage(currentPage() + 1)" aria-label="Next page">›</button>
-        </div>
-      </div>
-    }
+                                            <!-- Order total -->
+                                            <div class="order-details__total-row">
+                                                <span class="order-details__total-label">Order Total</span>
+                                                <span class="order-details__total-amount">{{ formatTotal(order.total) }}</span>
+                                            </div>
 
-  </div><!-- /orders-panel -->
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <!-- Pagination -->
+        @if (filteredOrders().length > 0) {
+            <div class="orders-pagination">
+                <p class="orders-pagination__info">
+                    Showing {{ showingCount() }} of {{ filteredCount() }} orders
+                </p>
+                <div class="orders-pagination__pages" role="navigation" aria-label="Pagination">
+                    <button class="page-btn" [disabled]="currentPage() === 1"
+                            (click)="goToPage(currentPage() - 1)" aria-label="Previous page">‹</button>
+                    @for (page of pages(); track page) {
+                        <button class="page-btn"
+                                [class.is-active]="currentPage() === page"
+                                (click)="goToPage(page)"
+                                [attr.aria-label]="'Page ' + page"
+                                [attr.aria-current]="currentPage() === page ? 'page' : null">
+                            {{ page }}
+                        </button>
+                    }
+                    <button class="page-btn" [disabled]="currentPage() === totalPages()"
+                            (click)="goToPage(currentPage() + 1)" aria-label="Next page">›</button>
+                </div>
+            </div>
+        }
+
+    </div><!-- /orders-panel -->
 
 </div><!-- /admin-orders -->

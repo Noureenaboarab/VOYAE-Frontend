@@ -334,9 +334,9 @@ tr:hover .table-actions { opacity: 1; }
   background: none;
   cursor: pointer;
   transition:
-    color var(--transition-fast),
-    border-color var(--transition-fast),
-    background-color var(--transition-fast);
+          color var(--transition-fast),
+          border-color var(--transition-fast),
+          background-color var(--transition-fast);
 
   &:hover {
     color: var(--color-ink);
@@ -486,9 +486,9 @@ tr:hover .table-actions { opacity: 1; }
   border: var(--border-thin);
   cursor: pointer;
   transition:
-    background-color var(--transition-fast),
-    border-color var(--transition-fast),
-    color var(--transition-fast);
+          background-color var(--transition-fast),
+          border-color var(--transition-fast),
+          color var(--transition-fast);
 
   &:hover:not(:disabled):not(.is-active) {
     border-color: var(--color-charcoal);

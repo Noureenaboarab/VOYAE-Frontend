@@ -131,7 +131,9 @@ export const routes: Routes = [
       {
         path: 'customers',
         loadComponent: () =>
-          import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
+            import('./features/admin/customers/admin-customers.component').then(
+                m => m.AdminCustomersComponent
+            ),
         title: 'Customers – VOYAE Admin',
       },
       {
