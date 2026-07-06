@@ -4,6 +4,7 @@
 import { Component, inject, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { SearchService } from '../../services/search.service';
 
@@ -16,6 +17,7 @@ import { SearchService } from '../../services/search.service';
 })
 export class HeaderComponent {
   private cart = inject(CartService);
+  readonly authService = inject(AuthService);
   readonly searchService = inject(SearchService);
 
   cartCount  = this.cart.itemCount;

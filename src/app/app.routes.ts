@@ -5,6 +5,8 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { adminGuard } from './core/guards/admin.guard';
+import { accountResolver } from './core/resolvers/account.resolver';
+import { offersResolver } from './core/resolvers/offers.resolver';
 
 export const routes: Routes = [
   {
@@ -83,7 +85,15 @@ export const routes: Routes = [
     loadComponent: () =>
         import('./features/account/account.component').then(m => m.AccountComponent),
     canActivate: [authGuard],
+    resolve: { account: accountResolver },
     title: 'My Account – VOYAE',
+  },
+  {
+    path: 'offers',
+    loadComponent: () =>
+        import('./features/offers/offers.component').then(m => m.OffersComponent),
+    resolve: { offers: offersResolver },
+    title: 'Bundle Offers – VOYAE',
   },
   {
     path: 'cart',
@@ -132,6 +142,14 @@ export const routes: Routes = [
         loadComponent: () =>
             import('./features/not-found/not-found.component').then(m => m.NotFoundComponent),
         title: 'Discounts – VOYAE Admin',
+      },
+      {
+        path: 'engine',
+        loadComponent: () =>
+            import('./features/admin/engine/admin-engine.component').then(
+                m => m.AdminEngineComponent
+            ),
+        title: 'Engine – VOYAE Admin',
       },
     ],
   },

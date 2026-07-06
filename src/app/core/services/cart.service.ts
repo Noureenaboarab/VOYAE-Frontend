@@ -1,7 +1,9 @@
 // ============================================================
 // VOYÆ — Cart Service (backend-aligned)
 // ============================================================
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { Cart, CartItem, Product } from '../models';
 
 const VALID_COUPONS: Record<string, number> = {
@@ -12,9 +14,12 @@ const VALID_COUPONS: Record<string, number> = {
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
+  private http = inject(HttpClient);
+
   readonly cart = signal<Cart>({ items: [], discount: 0 });
 
   readonly items      = computed(() => this.cart().items);
+  readonly discount   = computed(() => this.cart().discount ?? 0);
   readonly couponCode = computed(() => this.cart().coupon ?? '');
 
   readonly subtotal = computed(() =>
@@ -84,6 +89,14 @@ export class CartService {
 
   removeCoupon(): void {
     this.cart.update(cart => ({ ...cart, discount: 0, coupon: undefined }));
+  }
+
+  setDiscount(amount: number, label?: string): void {
+    this.cart.update(cart => ({ ...cart, discount: amount, coupon: label }));
+  }
+
+  applyOffer(offerId: number): Observable<any> {
+    return this.http.post(`/api/cart/offers/${offerId}`, {});
   }
 
   clear(): void {

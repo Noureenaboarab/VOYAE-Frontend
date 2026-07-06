@@ -5,13 +5,14 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductCardComponent } from '../../shared/components/ui/product-card/product-card.component';
+import { OfferStripComponent } from '../../shared/components/ui/offer-strip/offer-strip.component';
 import { ProductService } from '../../core/services/product.service';
 import { Testimonial } from '../../core/models';
 
 @Component({
   selector: 'voy-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, ProductCardComponent],
+  imports: [CommonModule, RouterLink, ProductCardComponent, OfferStripComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
