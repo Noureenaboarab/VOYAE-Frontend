@@ -107,6 +107,14 @@ export interface Address {
   isDefault: boolean;
 }
 
+export interface AddressCreateRequest {
+  label: string;
+  street: string;
+  city: string;
+  country: string;
+  postalCode: string;
+}
+
 export interface ShippingOption {
   id:          string;
   label:       string;
