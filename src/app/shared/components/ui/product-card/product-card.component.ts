@@ -32,7 +32,7 @@ export class ProductCardComponent {
 
   onAddToBag(event: Event): void {
     event.stopPropagation();
-    this.cart.addItem(this.product);
+    this.cart.addItem(this.product, 1);
   }
 
   get displayPrice(): string {

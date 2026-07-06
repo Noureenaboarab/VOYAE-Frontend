@@ -22,15 +22,28 @@ export interface Product {
   createdAt:    string;        // ISO string
 }
 
-export interface CartItem {
-  product:  Product;
-  quantity: number;
+// Mirrors org.packify.cart.CartItemResponse exactly.
+// Note: this is a FLAT shape (no nested `product` object) — the backend
+// returns productName/productImage/etc. directly on the item.
+export interface CartItemResponse {
+  id:             number;
+  productId:      number;
+  productName:    string;
+  productImage:   string | null;
+  unitPrice:      number;   // BigDecimal -> number
+  discount:       number;
+  effectivePrice: number;
+  quantity:       number;
+  subtotal:       number;
+  offerId:        number | null;
 }
 
-export interface Cart {
-  items:     CartItem[];
-  discount?: number;
-  coupon?:   string;
+// Mirrors org.packify.cart.CartResponse exactly.
+export interface CartResponse {
+  id:        number;
+  items:     CartItemResponse[];
+  itemCount: number;
+  subtotal:  number;
 }
 
 export interface OrderItem {
